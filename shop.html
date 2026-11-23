@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop | Hare &amp; Grouse</title>
+  <meta name="description" content="Browse antique and vintage furniture, lighting, décor, art, jewelry, fashion and watches at Hare & Grouse.">
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="hg-header"></div>
+
+  <main class="wrap">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+    <div class="shop-head"><h1 id="title">All Items</h1><p id="intro"></p></div>
+
+    <div class="shop">
+      <aside class="filters" id="filters" aria-label="Filters">
+        <h3>Refine Results</h3>
+        <details class="filter" open><summary>Category</summary><div class="opts" id="fCat"></div></details>
+        <details class="filter" open><summary>Price</summary><div class="opts">
+          <div class="price-range"><input type="number" id="fMin" placeholder="Min $" min="0"><span>–</span><input type="number" id="fMax" placeholder="Max $" min="0"></div>
+        </div></details>
+        <details class="filter" open><summary>Style</summary><div class="opts" id="fStyle"></div></details>
+        <details class="filter"><summary>Dealer Location</summary><div class="opts" id="fDealer"></div></details>
+        <details class="filter"><summary>Offers</summary><div class="opts">
+          <label><input type="checkbox" id="fSale"> On Sale</label>
+          <label><input type="checkbox" id="fNew"> New Arrivals</label>
+          <label><input type="checkbox" id="fFav"> My Favorites</label>
+        </div></details>
+      </aside>
+
+      <div>
+        <div class="toolbar">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-outline filter-toggle" id="filterToggle" style="height:40px">Filters</button>
+            <span id="count" class="muted small"></span>
+            <div class="chips" id="chips"></div>
+          </div>
+          <label><span class="sr">Sort</span>
+            <select id="sort">
+              <option value="rec">Sort: Recommended</option>
+              <option value="new">Newest</option>
+              <option value="low">Price: Low to High</option>
+              <option value="high">Price: High to Low</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid" id="results"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="hg-footer"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener("hg:ready", () => {
+      const $ = id => document.getElementById(id);
+      const qs = new URLSearchParams(location.search);
+      const state = {
+        cats: new Set(qs.get("cat") ? [qs.get("cat")] : []),
+        sub: qs.get("sub") || "",
+        styles: new Set(qs.get("style") ? [qs.get("style")] : []),
+        dealers: new Set(qs.get("dealer") ? [qs.get("dealer")] : []),
+        sale: qs.has("sale"), isNew: qs.has("new"), fav: qs.has("favs"),
+        q: qs.get("q") || "", min: "", max: "", sort: "rec"
+      };
+
+      // build filter options
+      $("fCat").innerHTML = HG.categories.map(c => {
+        const n = HG.products.filter(p => p.cat === c.slug).length;
+        return `<label><input type="checkbox" value="${c.slug}" ${state.cats.has(c.slug) ? "checked" : ""}> ${c.name} <span class="muted">(${n})</span></label>`;
+      }).join("");
+      $("fStyle").innerHTML = HG.styles.map(s => `<label><input type="checkbox" value="${s}" ${state.styles.has(s) ? "checked" : ""}> ${s}</label>`).join("");
+      $("fDealer").innerHTML = HG.dealers.map(d => `<label><input type="checkbox" value="${d.id}" ${state.dealers.has(d.id) ? "checked" : ""}> ${d.city}</label>`).join("");
+      $("fSale").checked = state.sale; $("fNew").checked = state.isNew; $("fFav").checked = state.fav;
+
+      const bindSet = (id, set) => $(id).addEventListener("change", e => {
+        e.target.checked ? set.add(e.target.value) : set.delete(e.target.value);
+        if (id === "fCat") state.sub = "";
+        render();
+      });
+      bindSet("fCat", state.cats); bindSet("fStyle", state.styles); bindSet("fDealer", state.dealers);
+      $("fSale").onchange = e => { state.sale = e.target.checked; render(); };
+      $("fNew").onchange = e => { state.isNew = e.target.checked; render(); };
+      $("fFav").onchange = e => { state.fav = e.target.checked; render(); };
+      $("fMin").oninput = e => { state.min = e.target.value; render(); };
+      $("fMax").oninput = e => { state.max = e.target.value; render(); };
+      $("sort").onchange = e => { state.sort = e.target.value; render(); };
+      $("filterToggle").onclick = () => $("filters").classList.toggle("open");
+      if (state.q) document.getElementById("searchInput").value = state.q;
+
+      function render() {
+        let list = state.q ? HG.search(state.q) : HG.products.slice();
+        if (state.cats.size) list = list.filter(p => state.cats.has(p.cat));
+        if (state.sub) list = list.filter(p => p.sub === state.sub);
+        if (state.styles.size) list = list.filter(p => state.styles.has(p.style));
+        if (state.dealers.size) list = list.filter(p => state.dealers.has(p.dealer));
+        if (state.sale) list = list.filter(p => p.sale);
+        if (state.isNew) list = list.filter(p => p.isNew);
+        if (state.fav) list = list.filter(p => HG.favs.has(p.id));
+        if (state.min) list = list.filter(p => p.price >= +state.min);
+        if (state.max) list = list.filter(p => p.price <= +state.max);
+        if (state.sort === "low") list.sort((a, b) => a.price - b.price);
+        if (state.sort === "high") list.sort((a, b) => b.price - a.price);
+        if (state.sort === "new") list.sort((a, b) => (b.isNew | 0) - (a.isNew | 0));
+
+        // title + crumbs
+        const one = state.cats.size === 1 ? [...state.cats][0] : null;
+        let title = state.q ? `Results for “${state.q}”` : state.fav ? "My Favorites" : state.sub || (one ? HG.catName(one) : state.styles.size === 1 ? [...state.styles][0] : state.sale ? "Sale" : state.isNew ? "New Arrivals" : "All Items");
+        $("title").textContent = title;
+        document.title = title + " | Hare & Grouse";
+        $("intro").textContent = one
+          ? `Discover ${HG.catName(one).toLowerCase()} sourced by our network of vetted dealers, from rare antiques to the finest contemporary design.`
+          : "Every piece is offered by a vetted dealer and protected by our Buyer Protection guarantee.";
+        $("crumbs").innerHTML = `<a href="index.html">Home</a> / <a href="shop.html">Shop</a>` +
+          (one ? ` / <a href="shop.html?cat=${one}">${HG.catName(one)}</a>` : "") + (state.sub ? ` / ${state.sub}` : "");
+
+        // chips
+        const chips = [];
+        if (state.sub) chips.push(["sub", "", state.sub]);
+        state.styles.forEach(s => chips.push(["styles", s, s]));
+        state.dealers.forEach(d => chips.push(["dealers", d, HG.dealer(d).city]));
+        if (state.q) chips.push(["q", "", `“${state.q}”`]);
+        $("chips").innerHTML = chips.map(([k, v, l]) => `<button class="chip" data-k="${k}" data-v="${v}">${l} ✕</button>`).join("");
+        $("count").textContent = `${list.length} item${list.length === 1 ? "" : "s"}`;
+
+        $("results").innerHTML = list.length ? list.map(HG.card).join("") :
+          `<div class="no-results" style="grid-column:1/-1"><h2>Nothing here just yet</h2><p class="muted">Try removing a filter, or <a class="link" href="shop.html">browse everything</a>.</p></div>`;
+      }
+
+      $("chips").addEventListener("click", e => {
+        const c = e.target.closest(".chip"); if (!c) return;
+        const k = c.dataset.k;
+        if (k === "sub" || k === "q") state[k] = ""; else state[k].delete(c.dataset.v);
+        document.querySelectorAll(`#fStyle input, #fDealer input`).forEach(i => i.checked = state.styles.has(i.value) || state.dealers.has(i.value));
+        render();
+      });
+
+      render();
+    });
+  </script>
+</body>
+</html>

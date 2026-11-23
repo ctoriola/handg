@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Item | Hare &amp; Grouse</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="hg-header"></div>
+
+  <main class="wrap">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+    <div class="pdp" id="pdp"></div>
+
+    <section style="padding-top:0">
+      <div class="sec-head"><div><h2>You May Also Like</h2></div></div>
+      <div class="grid" id="similar"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="offerModal" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
+    <form class="modal-box" id="offerForm">
+      <button type="button" class="icon-btn" id="offerClose" aria-label="Close"></button>
+      <h3 id="offerTitle">Make an Offer</h3>
+      <p class="muted small">The dealer usually replies within 24 hours. Offers are binding if accepted.</p>
+      <label for="offerAmt">Your offer (USD)</label>
+      <input id="offerAmt" type="number" min="1" required>
+      <label for="offerEmail">Email</label>
+      <input id="offerEmail" type="email" required>
+      <label for="offerNote">Message to dealer (optional)</label>
+      <textarea id="offerNote" rows="3"></textarea>
+      <button class="btn btn-dark block">Submit Offer</button>
+    </form>
+  </div>
+
+  <div id="hg-footer"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener("hg:ready", () => {
+      const $ = id => document.getElementById(id);
+      const p = HG.byId(new URLSearchParams(location.search).get("id")) || HG.products[0];
+      const d = HG.dealer(p.dealer);
+      document.title = p.name + " | Hare & Grouse";
+
+      $("crumbs").innerHTML = `<a href="index.html">Home</a> / <a href="shop.html?cat=${p.cat}">${HG.catName(p.cat)}</a> / <a href="shop.html?cat=${p.cat}&sub=${encodeURIComponent(p.sub)}">${p.sub}</a>`;
+
+      const gallery = p.gallery && p.gallery.length ? p.gallery : [p.img];
+      $("pdp").innerHTML = `
+        <div class="gallery">
+          <div class="thumbs">${gallery.map((g, i) => `<button class="${i ? "" : "on"}" data-src="${HG.img(g)}" aria-label="View image ${i + 1}"><img src="${HG.img(g)}" alt=""></button>`).join("")}</div>
+          <div class="main-img" id="mainImg"><img src="${HG.img(gallery[0])}" alt="${p.name}"></div>
+        </div>
+        <div class="pdp-info">
+          <span class="eyebrow">${p.style} · ${p.period.replace("-", "–")}</span>
+          <h1>${p.name}</h1>
+          <p class="pdp-price">${p.was ? `<s>${HG.money(p.was)}</s>` : ""}${HG.money(p.price)}</p>
+          <p class="muted small" style="margin-top:6px">Shipping quote available at checkout · Duties may apply</p>
+          <div class="pdp-actions">
+            <div class="row">
+              <button class="btn btn-dark" id="addBag">Add to Bag</button>
+              <button class="fav ${HG.favs.has(p.id) ? "on" : ""}" data-fav="${p.id}" aria-label="Save to favorites">${HG.ico.heart}</button>
+            </div>
+            <button class="btn btn-outline" id="offerBtn">Make an Offer</button>
+          </div>
+          <div class="assure">
+            <div>Buyer Protection: full refund if the item is not as described.</div>
+            <div>Sold by a vetted dealer with ${new Date().getFullYear() - d.since}+ years of experience.</div>
+            <div>Insured, white-glove delivery with tracking.</div>
+          </div>
+          <div class="specs">
+            <details open><summary>Details</summary>
+              <dl>
+                <dt>Dimensions</dt><dd>${p.dims}</dd>
+                <dt>Materials</dt><dd>${p.material}</dd>
+                <dt>Style</dt><dd>${p.style}</dd>
+                <dt>Period</dt><dd>${p.period.replace("-", "–")}</dd>
+                <dt>Condition</dt><dd>${p.condition}</dd>
+                <dt>Reference</dt><dd>${p.id.toUpperCase()}</dd>
+              </dl>
+            </details>
+            <details><summary>Description</summary>
+              <p class="txt">A beautifully preserved example of ${p.style.toLowerCase()} design, offered by ${d.name}. Each piece on Hare &amp; Grouse is inspected and described by the dealer, and photographs show the item as it will arrive. Contact the dealer for additional images, provenance documents or condition reports.</p>
+            </details>
+            <details><summary>Shipping &amp; Returns</summary>
+              <p class="txt">Ships from ${d.city}. Most items dispatch within 5–10 business days. Large items are delivered by specialist art and antique couriers. Returns are accepted within 7 days of delivery for items not as described.</p>
+            </details>
+          </div>
+          <div class="dealer-card">
+            <img src="${HG.img(d.img)}" alt="">
+            <div><h4>${d.name}</h4><p class="muted small">${d.city} · ★ ${d.rating.toFixed(1)}</p></div>
+            <a class="btn btn-outline" href="shop.html?dealer=${d.id}">View Dealer</a>
+          </div>
+        </div>`;
+
+      // gallery
+      const main = $("mainImg");
+      document.querySelectorAll(".thumbs button").forEach(b => b.addEventListener("click", () => {
+        document.querySelectorAll(".thumbs button").forEach(x => x.classList.remove("on"));
+        b.classList.add("on"); main.querySelector("img").src = b.dataset.src; main.classList.remove("zoom");
+      }));
+      main.addEventListener("click", () => main.classList.toggle("zoom"));
+      main.addEventListener("mousemove", e => {
+        const r = main.getBoundingClientRect();
+        main.querySelector("img").style.transformOrigin = `${(e.clientX - r.left) / r.width * 100}% ${(e.clientY - r.top) / r.height * 100}%`;
+      });
+
+      $("addBag").onclick = () => HG.addToBag(p.id);
+
+      // offer modal
+      const modal = $("offerModal");
+      $("offerClose").innerHTML = HG.ico.close;
+      $("offerBtn").onclick = () => { modal.classList.add("on"); $("offerAmt").value = Math.round(p.price * 0.9); $("offerAmt").focus(); };
+      $("offerClose").onclick = () => modal.classList.remove("on");
+      modal.onclick = e => { if (e.target === modal) modal.classList.remove("on"); };
+      $("offerForm").onsubmit = e => { e.preventDefault(); modal.classList.remove("on"); HG.toast("Offer sent to " + d.name + "."); };
+
+      // similar
+      const sim = HG.products.filter(x => x.id !== p.id && (x.cat === p.cat || x.style === p.style)).slice(0, 4);
+      $("similar").innerHTML = sim.map(HG.card).join("");
+    });
+  </script>
+</body>
+</html>
