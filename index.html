@@ -3,118 +3,114 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hare &amp; Grouse | Antiques, Vintage Furniture, Fine Art &amp; Jewelry</title>
-  <meta name="description" content="Hare & Grouse is a curated marketplace for antique and vintage furniture, fine art, jewelry, watches and design from the world's most trusted dealers.">
+  <title>Hare &amp; Grouse | Art Gallery · Vintage · Watches · Auctions</title>
+  <meta name="description" content="Hare & Grouse is an art gallery offering paintings and works on paper, vintage design, fine watches and online auctions.">
+  <meta name="theme-color" content="#031706">
   <link rel="icon" href="assets/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
   <div id="hg-header"></div>
 
   <main>
-    <!-- Hero carousel -->
+    <!-- Hero -->
     <section class="hero" aria-label="Featured" style="padding:0">
-      <div class="slide on"><img src="assets/photos/hero1.jpg" alt="A warm, sunlit living room styled with vintage pieces"></div>
-      <div class="slide"><img src="assets/photos/hero2.jpg" alt="A calm neutral lounge with a sculptural coffee table"></div>
-      <div class="slide"><img src="assets/photos/hero3.jpg" alt="A modern living room with leather and natural textures"></div>
+      <div class="slide on" data-eyebrow="Now Showing" data-title="Masters &amp; Moderns" data-text="Four centuries of painting in conversation, from Dutch still life to new abstraction from Lagos and Accra." data-cta="Explore Art" data-href="shop.html?cat=art">
+        <img src="assets/photos/gallery-salon.jpg" alt="A gallery salon hung with framed paintings on deep red walls"></div>
+      <div class="slide" data-eyebrow="Live Online Auction" data-title="Modern &amp; Contemporary Art" data-text="Eight lots, closing one by one. Register once, then bid from anywhere in the world." data-cta="Enter the Saleroom" data-href="sale.html?id=hg-2611">
+        <img src="assets/photos/gallery-auction.jpg" alt="A crowded saleroom during an auction"></div>
+      <div class="slide" data-eyebrow="New to the Gallery" data-title="Contemporary voices" data-text="New paintings and works on paper by artists we represent, available to acquire now." data-cta="View New Works" data-href="shop.html?cat=art&new=1">
+        <img src="assets/photos/gallery-dark.jpg" alt="A long, softly lit gallery corridor hung with contemporary works"></div>
       <div class="hero-copy" id="heroCopy">
-        <span class="eyebrow">The Autumn Collection</span>
-        <h1>Extraordinary pieces, thoughtfully found.</h1>
-        <p>Antique and vintage furniture, fine art and jewelry from the world's most trusted dealers, all in one place.</p>
-        <a class="btn btn-light" href="shop.html?new=1">Shop New Arrivals</a>
+        <span class="eyebrow"></span>
+        <h1></h1>
+        <p></p>
+        <a class="btn btn-gold" href="#"></a>
       </div>
       <div class="hero-dots" id="heroDots"></div>
     </section>
 
-    <!-- Categories -->
+    <!-- Four pillars -->
     <section>
       <div class="wrap">
-        <div class="sec-head"><div><h2>Shop by Category</h2></div><a class="text-link" href="shop.html">View All</a></div>
-        <div class="cat-grid" id="catGrid"></div>
+        <div class="sec-head"><div><span class="eyebrow">The Gallery</span><h2>Art, Vintage, Watches &amp; Auction</h2></div></div>
+        <div class="pillars">
+          <a class="pillar" href="shop.html?cat=art"><img src="assets/photos/art-saffron.jpg" alt="" loading="lazy"><div><h3>Art</h3><p>Paintings, works on paper, prints and sculpture.</p><span class="go">Explore</span></div></a>
+          <a class="pillar" href="shop.html?cat=vintage"><img src="assets/photos/vin-pendants.jpg" alt="" loading="lazy"><div><h3>Vintage</h3><p>Design, lighting, jewelry and objects to live with art.</p><span class="go">Explore</span></div></a>
+          <a class="pillar" href="shop.html?cat=watches"><img src="assets/photos/watch-bronze.jpg" alt="" loading="lazy"><div><h3>Watches</h3><p>Authenticated vintage and independent timepieces.</p><span class="go">Explore</span></div></a>
+          <a class="pillar is-auction" href="auctions.html"><img src="assets/photos/gallery-auction.jpg" alt="" loading="lazy"><div><h3>Auction</h3><p>Timed online sales with live bidding and transparent results.</p><span class="go">Enter the Saleroom</span></div></a>
+        </div>
       </div>
     </section>
 
-    <!-- New arrivals rail -->
-    <section class="cream">
+    <!-- Live auction band -->
+    <section class="band" id="liveBand">
+      <img class="band-mono" src="assets/img/monogram.png" alt="">
       <div class="wrap">
         <div class="sec-head">
-          <div><span class="eyebrow">Just In</span><h2>New Arrivals</h2><p>The latest additions from our dealers, refreshed daily.</p></div>
+          <div><span class="eyebrow"><span class="live-dot"></span>&nbsp; Live Online Auction</span><h2 id="bandTitle"></h2><p id="bandSub"></p></div>
+          <a class="btn btn-outline" id="bandCta" href="#">View All Lots</a>
+        </div>
+        <div class="grid" id="bandLots"></div>
+      </div>
+    </section>
+
+    <!-- New art -->
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <div><span class="eyebrow">Available Now</span><h2>New to the Gallery</h2><p>Recently acquired works, ready to collect.</p></div>
           <div class="rail-nav"><button data-rail="newRail" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button data-rail="newRail" data-dir="1" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
         </div>
         <div class="rail" id="newRail"></div>
       </div>
     </section>
 
-    <!-- Editorial split -->
-    <section style="padding:0">
-      <div class="split">
-        <div class="split-img"><img src="assets/photos/room1.jpg" alt="A styled corner with a mustard armchair and modernist art" loading="lazy"></div>
-        <div class="split-copy">
-          <span class="eyebrow">The Collector's Edit</span>
-          <h2>Quiet luxury for the considered home</h2>
-          <p>Our specialists have gathered pieces that age beautifully: honest materials, careful craftsmanship and forms that never date.</p>
-          <div><a class="btn btn-gold" href="shop.html?cat=furniture">Explore the Edit</a></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Trending -->
-    <section>
-      <div class="wrap">
-        <div class="sec-head"><div><span class="eyebrow">Most Saved This Week</span><h2>Trending Now</h2></div><a class="text-link" href="shop.html">Shop All</a></div>
-        <div class="grid" id="trendGrid"></div>
-      </div>
-    </section>
-
-    <!-- Shop by style -->
+    <!-- Artists -->
     <section class="cream">
       <div class="wrap">
-        <div class="sec-head"><div><h2>Shop by Style</h2><p>From Georgian elegance to Scandinavian ease.</p></div></div>
-        <div class="style-grid">
-          <a class="style-tile" href="shop.html?style=Mid-Century%20Modern"><img src="assets/photos/sofa.jpg" alt="" loading="lazy"><span>Mid-Century Modern</span></a>
-          <a class="style-tile" href="shop.html?style=Art%20Deco"><img src="assets/photos/ring.jpg" alt="" loading="lazy"><span>Art Deco</span></a>
-          <a class="style-tile" href="shop.html?style=Victorian"><img src="assets/photos/rug.jpg" alt="" loading="lazy"><span>Victorian</span></a>
-          <a class="style-tile" href="shop.html?style=Contemporary"><img src="assets/photos/vase.jpg" alt="" loading="lazy"><span>Contemporary</span></a>
-          <a class="style-tile" href="shop.html?style=Scandinavian"><img src="assets/photos/chair2.jpg" alt="" loading="lazy"><span>Scandinavian</span></a>
-          <a class="style-tile" href="shop.html?style=Hollywood%20Regency"><img src="assets/photos/chair.jpg" alt="" loading="lazy"><span>Hollywood Regency</span></a>
-          <a class="style-tile" href="shop.html?style=Georgian"><img src="assets/photos/art.jpg" alt="" loading="lazy"><span>Georgian</span></a>
-          <a class="style-tile" href="shop.html?style=Modernist"><img src="assets/photos/lamp.jpg" alt="" loading="lazy"><span>Modernist</span></a>
+        <div class="sec-head"><div><span class="eyebrow">Represented Artists</span><h2>Artists of the Gallery</h2></div><a class="text-link" href="shop.html?cat=art">All Works</a></div>
+        <div class="artist-grid" id="artistGrid"></div>
+      </div>
+    </section>
+
+    <!-- Vintage split -->
+    <section style="padding:0">
+      <div class="split">
+        <div class="split-img"><img src="assets/photos/room1.jpg" alt="A mustard armchair, brass floor lamp and modernist print" loading="lazy"></div>
+        <div class="split-copy">
+          <span class="eyebrow">Vintage</span>
+          <h2>Design chosen to live with great art</h2>
+          <p>Mid-century furniture, lighting, jewelry and objects, selected by our specialists for craftsmanship and quiet character.</p>
+          <div><a class="btn btn-gold" href="shop.html?cat=vintage">Shop Vintage</a></div>
         </div>
       </div>
     </section>
 
-    <!-- Jewelry & watches rail -->
+    <!-- Vintage + Watches rail -->
     <section>
       <div class="wrap">
         <div class="sec-head">
-          <div><span class="eyebrow">Fine &amp; Rare</span><h2>Jewelry &amp; Watches</h2></div>
-          <div class="rail-nav"><button data-rail="jewelRail" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button data-rail="jewelRail" data-dir="1" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+          <div><span class="eyebrow">Fine &amp; Rare</span><h2>Watches &amp; Jewelry</h2></div>
+          <div class="rail-nav"><button data-rail="watchRail" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button data-rail="watchRail" data-dir="1" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
         </div>
-        <div class="rail" id="jewelRail"></div>
+        <div class="rail" id="watchRail"></div>
       </div>
     </section>
 
-    <!-- Dealers -->
-    <section class="cream" id="dealers">
-      <div class="wrap">
-        <div class="sec-head"><div><span class="eyebrow">Trusted Worldwide</span><h2>Featured Dealers</h2><p>Every seller is vetted for expertise, integrity and service.</p></div><a class="text-link" href="#sell">Become a Dealer</a></div>
-        <div class="dealer-grid" id="dealerGrid"></div>
-      </div>
-    </section>
-
-    <!-- Trade + Sell banners -->
-    <section>
+    <!-- Consign + advisory -->
+    <section style="padding-top:0" id="consign">
       <div class="wrap banner-pair">
-        <div class="banner" id="trade">
-          <img src="assets/photos/study.jpg" alt="" loading="lazy">
-          <div><span class="eyebrow">For Designers</span><h2>The Trade Program</h2><p>Exclusive pricing, a dedicated advisor and project tools for interior designers and architects.</p><a class="btn btn-light" href="#">Apply Now</a></div>
+        <div class="banner">
+          <img src="assets/photos/gallery-white.jpg" alt="" loading="lazy">
+          <div><span class="eyebrow">Sell With Us</span><h2>Consign to Auction</h2><p>Free, confidential valuations from our specialists, and a global audience of collectors for your work.</p><a class="btn btn-gold" href="#">Request a Valuation</a></div>
         </div>
-        <div class="banner" id="sell">
-          <img src="assets/photos/room3.jpg" alt="" loading="lazy">
-          <div><span class="eyebrow">For Dealers</span><h2>Sell With Hare &amp; Grouse</h2><p>Reach discerning collectors across Africa, Europe and the Americas with concierge logistics.</p><a class="btn btn-light" href="#">Start Selling</a></div>
+        <div class="banner">
+          <img src="assets/photos/study.jpg" alt="" loading="lazy">
+          <div><span class="eyebrow">Private Clients</span><h2>Art Advisory</h2><p>Collection building, interiors and private sales for collectors, designers and companies.</p><a class="btn btn-light" href="#">Book a Consultation</a></div>
         </div>
       </div>
     </section>
@@ -126,55 +122,88 @@
         <div class="journal-grid" id="journalGrid"></div>
       </div>
     </section>
+
+    <!-- Visit -->
+    <section class="band" style="padding:0" id="visit">
+      <div class="visit">
+        <div class="visit-img"><img src="assets/photos/gallery-white.jpg" alt="The white-walled gallery space" loading="lazy"></div>
+        <div class="visit-copy">
+          <span class="eyebrow">Visit the Gallery</span>
+          <h2>See the work in person</h2>
+          <dl>
+            <dt>Address</dt><dd>Your gallery address here</dd>
+            <dt>Hours</dt><dd>Tuesday to Saturday, 10:00 to 18:00</dd>
+            <dt>Viewings</dt><dd>Private viewings and auction previews by appointment</dd>
+          </dl>
+          <div class="sale-actions"><a class="btn btn-gold" href="#">Book a Viewing</a><a class="btn btn-outline" href="#">Get Directions</a></div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div id="hg-footer"></div>
 
   <script src="assets/js/data.js"></script>
+  <script src="assets/js/auction-data.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/auction.js"></script>
   <script>
     document.addEventListener("hg:ready", () => {
-      // categories
-      document.getElementById("catGrid").innerHTML = HG.categories.map(c =>
-        `<a class="cat" href="shop.html?cat=${c.slug}"><div class="cat-img"><img src="${HG.img(c.img)}" alt="" loading="lazy"></div><span>${c.name}</span></a>`).join("");
+      const $ = id => document.getElementById(id), A = HG.auction;
 
-      // rails + grids
-      document.getElementById("newRail").innerHTML = HG.products.filter(p => p.isNew).map(HG.card).join("");
-      const trending = ["hg-1002", "hg-4002", "hg-5003", "hg-3004", "hg-2001", "hg-1007", "hg-6001", "hg-4003"];
-      document.getElementById("trendGrid").innerHTML = trending.map(HG.byId).map(HG.card).join("");
-      document.getElementById("jewelRail").innerHTML = HG.products.filter(p => p.cat === "jewelry" || p.cat === "watches").map(HG.card).join("");
+      // live auction band: first live sale, its next four lots to close
+      const sale = HG.sales.find(s => A.saleStatus(s) === "live") || HG.sales.find(s => A.saleStatus(s) === "upcoming");
+      const drawBand = () => {
+        if (!sale) { $("liveBand").remove(); return; }
+        const open = sale.lots.filter(l => A.status(sale, l) !== "closed");
+        const lots = (open.length ? open : sale.lots).slice(0, 4);
+        $("bandTitle").textContent = sale.title;
+        $("bandSub").textContent = `${sale.lots.length} lots · ` + (open.length ? `Lots begin closing ${A.date(A.saleStart(sale))}` : "Sale closed. See results.");
+        $("bandCta").href = `sale.html?id=${sale.id}`;
+        $("bandLots").innerHTML = lots.map(l => A.lotCard(sale, l)).join("");
+      };
+      drawBand();
+      A.run(e => { if (e.type !== "room" || e.sale === sale) drawBand(); });
 
-      // dealers
-      document.getElementById("dealerGrid").innerHTML = HG.dealers.slice(0, 3).map(d => `
-        <a class="dealer" href="shop.html?dealer=${d.id}">
-          <div class="dealer-img"><img src="${HG.img(d.img)}" alt="" loading="lazy"></div>
-          <div class="dealer-body"><div><h3>${d.name}</h3><p class="muted small">${d.city} · Est. ${d.since}</p></div><span class="stars">★ ${d.rating.toFixed(1)}</span></div>
-        </a>`).join("");
+      // rails
+      $("newRail").innerHTML = HG.products.filter(p => p.cat === "art").map(HG.card).join("");
+      $("watchRail").innerHTML = HG.products.filter(p => p.cat === "watches" || p.sub === "Jewelry").map(HG.card).join("");
+
+      // artists
+      $("artistGrid").innerHTML = HG.artists.map(a => `
+        <a class="artist" href="shop.html?q=${encodeURIComponent(a.name)}">
+          <div class="artist-img"><img src="${HG.img(a.img)}" alt="" loading="lazy"></div>
+          <h3>${a.name}</h3><p>${a.origin} · ${a.note}</p></a>`).join("");
 
       // journal
-      document.getElementById("journalGrid").innerHTML = HG.articles.map(a => `
+      $("journalGrid").innerHTML = HG.articles.map(a => `
         <a class="article" href="#"><div class="article-img"><img src="${HG.img(a.img)}" alt="" loading="lazy"></div>
         <span class="eyebrow">${a.tag}</span><h3>${a.title}</h3><p class="muted small">${a.read}</p></a>`).join("");
 
-      // rail arrows
       document.querySelectorAll("[data-rail]").forEach(b => b.addEventListener("click", () => {
-        const r = document.getElementById(b.dataset.rail);
+        const r = $(b.dataset.rail);
         r.scrollBy({ left: r.clientWidth * 0.75 * +b.dataset.dir, behavior: "smooth" });
       }));
 
-      // hero carousel
-      const slides = [...document.querySelectorAll(".slide")];
-      const dots = document.getElementById("heroDots");
+      // hero carousel with per-slide copy
+      const slides = [...document.querySelectorAll(".slide")], dots = $("heroDots"), copy = $("heroCopy");
       dots.innerHTML = slides.map((_, i) => `<button aria-label="Slide ${i + 1}" class="${i ? "" : "on"}"></button>`).join("");
+      const paint = s => {
+        copy.querySelector(".eyebrow").innerHTML = s.dataset.eyebrow;
+        copy.querySelector("h1").innerHTML = s.dataset.title;
+        copy.querySelector("p").textContent = s.dataset.text;
+        const a = copy.querySelector("a"); a.textContent = s.dataset.cta; a.href = s.dataset.href;
+      };
       let i = 0, t;
       const go = n => {
         slides[i].classList.remove("on"); dots.children[i].classList.remove("on");
         i = (n + slides.length) % slides.length;
-        slides[i].classList.add("on"); dots.children[i].classList.add("on");
-        clearInterval(t); t = setInterval(() => go(i + 1), 6000);
+        slides[i].classList.add("on"); dots.children[i].classList.add("on"); paint(slides[i]);
+        clearInterval(t); t = setInterval(() => go(i + 1), 7000);
       };
+      paint(slides[0]);
       [...dots.children].forEach((d, n) => d.addEventListener("click", () => go(n)));
-      t = setInterval(() => go(i + 1), 6000);
+      t = setInterval(() => go(i + 1), 7000);
     });
   </script>
 </body>

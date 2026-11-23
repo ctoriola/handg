@@ -4,10 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Item | Hare &amp; Grouse</title>
+  <meta name="theme-color" content="#031706">
   <link rel="icon" href="assets/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -26,13 +27,13 @@
   <div class="modal" id="offerModal" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
     <form class="modal-box" id="offerForm">
       <button type="button" class="icon-btn" id="offerClose" aria-label="Close"></button>
-      <h3 id="offerTitle">Make an Offer</h3>
-      <p class="muted small">The dealer usually replies within 24 hours. Offers are binding if accepted.</p>
+      <h3 id="offerTitle">Enquire or Make an Offer</h3>
+      <p class="muted small">Our specialists usually reply within 24 hours. Offers are binding if accepted.</p>
       <label for="offerAmt">Your offer (USD)</label>
       <input id="offerAmt" type="number" min="1" required>
       <label for="offerEmail">Email</label>
       <input id="offerEmail" type="email" required>
-      <label for="offerNote">Message to dealer (optional)</label>
+      <label for="offerNote">Message (optional)</label>
       <textarea id="offerNote" rows="3"></textarea>
       <button class="btn btn-dark block">Submit Offer</button>
     </form>
@@ -41,12 +42,12 @@
   <div id="hg-footer"></div>
 
   <script src="assets/js/data.js"></script>
+  <script src="assets/js/auction-data.js"></script>
   <script src="assets/js/app.js"></script>
   <script>
     document.addEventListener("hg:ready", () => {
       const $ = id => document.getElementById(id);
       const p = HG.byId(new URLSearchParams(location.search).get("id")) || HG.products[0];
-      const d = HG.dealer(p.dealer);
       document.title = p.name + " | Hare & Grouse";
 
       $("crumbs").innerHTML = `<a href="index.html">Home</a> / <a href="shop.html?cat=${p.cat}">${HG.catName(p.cat)}</a> / <a href="shop.html?cat=${p.cat}&sub=${encodeURIComponent(p.sub)}">${p.sub}</a>`;
@@ -58,8 +59,9 @@
           <div class="main-img" id="mainImg"><img src="${HG.img(gallery[0])}" alt="${p.name}"></div>
         </div>
         <div class="pdp-info">
-          <span class="eyebrow">${p.style} · ${p.period.replace("-", "–")}</span>
-          <h1>${p.name}</h1>
+          ${p.artist ? `<p class="lot-artist" style="font-size:26px">${p.artist}</p>` : `<span class="eyebrow">${p.style} · ${p.period.replace("-", "–")}</span>`}
+          <h1 ${p.artist ? 'style="font-style:italic"' : ""}>${p.name}</h1>
+          <p class="muted">${p.material} · ${p.dims}</p>
           <p class="pdp-price">${p.was ? `<s>${HG.money(p.was)}</s>` : ""}${HG.money(p.price)}</p>
           <p class="muted small" style="margin-top:6px">Shipping quote available at checkout · Duties may apply</p>
           <div class="pdp-actions">
@@ -67,12 +69,12 @@
               <button class="btn btn-dark" id="addBag">Add to Bag</button>
               <button class="fav ${HG.favs.has(p.id) ? "on" : ""}" data-fav="${p.id}" aria-label="Save to favorites">${HG.ico.heart}</button>
             </div>
-            <button class="btn btn-outline" id="offerBtn">Make an Offer</button>
+            <button class="btn btn-outline" id="offerBtn">Make an Enquiry or Offer</button>
           </div>
           <div class="assure">
-            <div>Buyer Protection: full refund if the item is not as described.</div>
-            <div>Sold by a vetted dealer with ${new Date().getFullYear() - d.since}+ years of experience.</div>
-            <div>Insured, white-glove delivery with tracking.</div>
+            <div>Authenticity guaranteed by Hare &amp; Grouse, with full documentation.</div>
+            <div>Viewing at the gallery available by appointment.</div>
+            <div>Insured fine-art shipping worldwide, with tracking.</div>
           </div>
           <div class="specs">
             <details open><summary>Details</summary>
@@ -86,16 +88,16 @@
               </dl>
             </details>
             <details><summary>Description</summary>
-              <p class="txt">A beautifully preserved example of ${p.style.toLowerCase()} design, offered by ${d.name}. Each piece on Hare &amp; Grouse is inspected and described by the dealer, and photographs show the item as it will arrive. Contact the dealer for additional images, provenance documents or condition reports.</p>
+              <p class="txt">${p.artist ? `${p.name} by ${p.artist}, ${p.material.toLowerCase()}.` : `A fine example of ${p.style.toLowerCase()} design.`} Every work at Hare &amp; Grouse is examined and described by our specialists, and photographs show it as it will arrive. Contact us for additional images, provenance documents or a condition report.</p>
             </details>
             <details><summary>Shipping &amp; Returns</summary>
-              <p class="txt">Ships from ${d.city}. Most items dispatch within 5–10 business days. Large items are delivered by specialist art and antique couriers. Returns are accepted within 7 days of delivery for items not as described.</p>
+              <p class="txt">Ships from the gallery. Most works dispatch within 5–10 business days with specialist fine-art couriers. Returns are accepted within 7 days of delivery for items not as described.</p>
             </details>
           </div>
           <div class="dealer-card">
-            <img src="${HG.img(d.img)}" alt="">
-            <div><h4>${d.name}</h4><p class="muted small">${d.city} · ★ ${d.rating.toFixed(1)}</p></div>
-            <a class="btn btn-outline" href="shop.html?dealer=${d.id}">View Dealer</a>
+            <img src="assets/img/favicon.png" alt="">
+            <div><h4>Speak to a Specialist</h4><p class="muted small">Questions about this work? We reply within one working day.</p></div>
+            <a class="btn btn-outline" href="${p.artist ? `shop.html?q=${encodeURIComponent(p.artist)}` : `shop.html?cat=${p.cat}`}">${p.artist ? "More by Artist" : "View Similar"}</a>
           </div>
         </div>`;
 
@@ -119,10 +121,10 @@
       $("offerBtn").onclick = () => { modal.classList.add("on"); $("offerAmt").value = Math.round(p.price * 0.9); $("offerAmt").focus(); };
       $("offerClose").onclick = () => modal.classList.remove("on");
       modal.onclick = e => { if (e.target === modal) modal.classList.remove("on"); };
-      $("offerForm").onsubmit = e => { e.preventDefault(); modal.classList.remove("on"); HG.toast("Offer sent to " + d.name + "."); };
+      $("offerForm").onsubmit = e => { e.preventDefault(); modal.classList.remove("on"); HG.toast("Thank you. A specialist will be in touch shortly."); };
 
       // similar
-      const sim = HG.products.filter(x => x.id !== p.id && (x.cat === p.cat || x.style === p.style)).slice(0, 4);
+      const sim = HG.products.filter(x => x.id !== p.id && (x.artist && x.artist === p.artist || x.cat === p.cat)).sort((a, b) => (b.artist === p.artist) - (a.artist === p.artist)).slice(0, 4);
       $("similar").innerHTML = sim.map(HG.card).join("");
     });
   </script>

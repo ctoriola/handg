@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auctions | Hare &amp; Grouse</title>
+  <meta name="description" content="Bid online in Hare & Grouse timed auctions of art, vintage design and fine watches.">
+  <meta name="theme-color" content="#031706">
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="hg-header"></div>
+
+  <main>
+    <section class="auc-hero">
+      <img src="assets/photos/gallery-auction.jpg" alt="">
+      <div class="wrap">
+        <span class="eyebrow"><span class="live-dot"></span>&nbsp; Hare &amp; Grouse Auctions</span>
+        <h1>The Saleroom</h1>
+        <p>Timed online auctions of art, vintage design and fine watches. Register once, set a maximum bid, and we'll bid for you only as much as needed.</p>
+        <div class="hero-meta" id="heroMeta"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div id="regBanner"></div>
+        <div class="tabs" role="tablist">
+          <button class="on" data-tab="current" role="tab">Live &amp; Upcoming</button>
+          <button data-tab="results" role="tab">Past Results</button>
+          <button data-tab="mybids" role="tab">My Bids &amp; Watchlist <span class="n" id="myCount">0</span></button>
+        </div>
+        <div id="panel"></div>
+      </div>
+    </section>
+
+    <section class="band" id="how">
+      <img class="band-mono" src="assets/img/monogram.png" alt="">
+      <div class="wrap">
+        <div class="sec-head"><div><span class="eyebrow">New to Auctions?</span><h2>How to Bid</h2></div><a class="btn btn-outline" href="#" id="howReg">Register to Bid</a></div>
+        <div class="steps">
+          <div class="step"><h3>Register</h3><p>Create a free paddle in under a minute. One registration covers every online sale.</p></div>
+          <div class="step"><h3>Set your maximum</h3><p>Enter the most you're willing to pay. We bid on your behalf, one increment at a time, only when someone bids against you.</p></div>
+          <div class="step"><h3>Watch the close</h3><p>Lots close one by one. A bid in the final two minutes extends that lot by two minutes, so everyone gets a fair chance.</p></div>
+          <div class="step"><h3>Win &amp; collect</h3><p>Winners receive an invoice for the hammer price plus a 25% buyer's premium. We arrange insured delivery worldwide.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="hg-footer"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auction-data.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auction.js"></script>
+  <script>
+    document.addEventListener("hg:ready", () => {
+      const $ = id => document.getElementById(id), A = HG.auction;
+      let tab = { "#results": "results", "#mybids": "mybids" }[location.hash] || "current";
+
+      const live = HG.sales.filter(s => A.saleStatus(s) === "live");
+      const upcoming = HG.sales.filter(s => A.saleStatus(s) === "upcoming");
+      const totalLots = [...live, ...upcoming].reduce((n, s) => n + s.lots.length, 0);
+      $("heroMeta").innerHTML = `
+        <div><small>Live sales</small><strong>${live.length}</strong></div>
+        <div><small>Upcoming</small><strong>${upcoming.length}</strong></div>
+        <div><small>Lots on offer</small><strong>${totalLots}</strong></div>
+        <div><small>Buyer's premium</small><strong>${A.PREMIUM * 100}%</strong></div>
+        <a class="btn btn-gold" href="#" id="heroReg"></a>`;
+
+      const regBanner = () => {
+        const r = A.reg();
+        $("regBanner").innerHTML = r
+          ? `<div class="reg-banner"><span>You're registered to bid as <strong>${r.name}</strong> · Paddle <strong>${r.paddle}</strong></span><button class="link" data-tab-go="mybids">View my bids</button></div>`
+          : `<div class="reg-banner"><span><strong>Register once to bid in every sale.</strong> It's free and takes under a minute.</span><button class="btn btn-dark" data-register style="height:40px">Register to Bid</button></div>`;
+        const h = $("heroReg"); h.textContent = r ? `Paddle ${r.paddle}` : "Register to Bid"; h.toggleAttribute("data-register", !r);
+      };
+
+      const saleCard = s => {
+        const st = A.saleStatus(s), now = Date.now();
+        const status = st === "live" ? `<span class="live-dot"></span> Live now` : st === "upcoming" ? "Upcoming" : "Results";
+        const when = st === "live"
+          ? `<div><small>Lots begin closing</small><span data-sale-cd="${s.id}">${A.fmt(A.saleStart(s) - now)}</span></div><div><small>First lot closes</small><span>${A.date(A.saleStart(s))}</span></div>`
+          : st === "upcoming"
+          ? `<div><small>Bidding opens</small><span>${A.date(A.opensAt(s))}</span></div><div><small>Closes</small><span>${A.date(A.saleStart(s))}</span></div>`
+          : `<div><small>Closed</small><span>${A.date(A.saleEnd(s))}</span></div><div><small>Sold by lot</small><span>${Math.round(s.lots.filter(l => A.result(s, l).sold).length / s.lots.length * 100)}%</span></div>`;
+        const cta = st === "live" ? "Bid Now" : st === "upcoming" ? "Preview Lots" : "View Results";
+        return `<article class="sale-card">
+          <a class="sale-img" href="sale.html?id=${s.id}"><img src="${HG.img(s.img)}" alt="" loading="lazy"></a>
+          <div class="sale-body">
+            <span class="sale-status">${status} · Sale ${s.code}</span>
+            <h2><a href="sale.html?id=${s.id}">${s.title}</a></h2>
+            <p class="muted">${s.intro}</p>
+            <div class="sale-facts"><div><small>Lots</small><span>${s.lots.length}</span></div>${when}</div>
+            <div class="sale-actions"><a class="btn btn-dark" href="sale.html?id=${s.id}">${cta}</a>${st !== "closed" && !A.reg() ? '<button class="btn btn-outline" data-register>Register</button>' : ""}</div>
+          </div>
+        </article>`;
+      };
+
+      const render = () => {
+        regBanner();
+        const mine = A.myLots();
+        $("myCount").textContent = mine.length;
+        document.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+        if (tab === "current") {
+          const list = HG.sales.filter(s => A.saleStatus(s) !== "closed");
+          const justClosed = HG.sales.filter(s => !s.past && A.saleStatus(s) === "closed");
+          $("panel").innerHTML = list.map(saleCard).join("") + justClosed.map(saleCard).join("") ||
+            `<div class="no-results"><h2>No sales right now</h2><p class="muted">Sign up to our newsletter to hear about the next one.</p></div>`;
+        } else if (tab === "results") {
+          const past = HG.sales.filter(s => A.saleStatus(s) === "closed");
+          $("panel").innerHTML = past.map(s => saleCard(s) + `<div class="grid" style="margin:-4px 0 48px">${s.lots.map(l => A.lotCard(s, l)).join("")}</div>`).join("");
+        } else {
+          $("panel").innerHTML = mine.length
+            ? `<div class="grid">${mine.map(([s, l]) => A.lotCard(s, l)).join("")}</div>`
+            : `<div class="no-results"><h2>No bids or watched lots yet</h2><p class="muted">Tap the heart on any lot to watch it, or place a bid to track it here.</p><p style="margin-top:20px"><a class="btn btn-dark" href="sale.html?id=${(live[0] || HG.sales[0]).id}">Browse the Live Sale</a></p></div>`;
+        }
+      };
+
+      document.addEventListener("click", e => {
+        const t = e.target.closest("[data-tab],[data-tab-go]");
+        if (t) { tab = t.dataset.tab || t.dataset.tabGo; history.replaceState(null, "", tab === "current" ? "#" : "#" + tab); render(); }
+        if (e.target.closest("[data-register]")) { e.preventDefault(); A.requireReg(render); }
+      });
+      $("howReg").addEventListener("click", e => { e.preventDefault(); A.requireReg(render); });
+      window.addEventListener("hashchange", () => { tab = { "#results": "results", "#mybids": "mybids" }[location.hash] || tab; render(); });
+
+      render();
+      setInterval(() => document.querySelectorAll("[data-sale-cd]").forEach(el => el.textContent = A.fmt(A.saleStart(HG.sale(el.dataset.saleCd)) - Date.now())), 1000);
+      A.run(e => { if (e.type !== "room" || tab === "mybids") render(); });
+    });
+  </script>
+</body>
+</html>

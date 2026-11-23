@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auction | Hare &amp; Grouse</title>
+  <meta name="theme-color" content="#031706">
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="hg-header"></div>
+
+  <main>
+    <section class="auc-hero">
+      <img id="saleImg" src="" alt="">
+      <div class="wrap">
+        <nav class="crumbs" style="color:#b9c4bb;padding:0 0 18px"><a href="index.html">Home</a> / <a href="auctions.html">Auctions</a> / <span id="crumbSale"></span></nav>
+        <span class="eyebrow" id="saleStatus"></span>
+        <h1 id="saleTitle"></h1>
+        <p id="saleIntro"></p>
+        <div class="hero-meta" id="saleMeta"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div id="regBanner"></div>
+        <div class="lot-tools">
+          <input type="search" id="lotSearch" placeholder="Search lots by artist or title" aria-label="Search lots">
+          <div class="seg" role="group" aria-label="Show">
+            <button class="on" data-show="all">All lots</button>
+            <button data-show="open">Open</button>
+            <button data-show="mine">My bids</button>
+            <button data-show="watch">Watching</button>
+          </div>
+          <label><span class="sr">Sort lots</span>
+            <select id="lotSort">
+              <option value="lot">Lot number</option>
+              <option value="closing">Closing soonest</option>
+              <option value="low">Estimate: low to high</option>
+              <option value="high">Estimate: high to low</option>
+              <option value="bids">Most bids</option>
+            </select>
+          </label>
+        </div>
+        <p class="muted small" id="lotCount" style="margin:-12px 0 20px"></p>
+        <div class="grid" id="lots"></div>
+      </div>
+    </section>
+
+    <section class="cream">
+      <div class="wrap trust-grid">
+        <div class="trust" style="border:0;padding:0"><h4>Buyer's Premium</h4><p>A premium of 25% is added to the hammer price of every lot. Applicable taxes are charged on the premium.</p></div>
+        <div class="trust" style="border:0;padding:0"><h4>Condition Reports</h4><p>Every lot is offered as seen. Request a detailed condition report or more photographs from our specialists.</p></div>
+        <div class="trust" style="border:0;padding:0"><h4>Payment</h4><p>Invoices are issued as soon as each lot closes and are payable within 7 days by card, transfer or Paystack.</p></div>
+        <div class="trust" style="border:0;padding:0"><h4>Collection &amp; Shipping</h4><p>Collect from the gallery by appointment, or we'll arrange insured fine-art shipping to your door.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="hg-footer"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auction-data.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auction.js"></script>
+  <script>
+    document.addEventListener("hg:ready", () => {
+      const $ = id => document.getElementById(id), A = HG.auction;
+      const sale = HG.sale(new URLSearchParams(location.search).get("id")) || HG.sales[0];
+      let show = "all", q = "", sort = "lot";
+
+      document.title = sale.title + " | Hare & Grouse Auctions";
+      $("saleImg").src = HG.img(sale.img);
+      $("crumbSale").textContent = sale.title;
+      $("saleTitle").textContent = sale.title;
+      $("saleIntro").textContent = sale.intro;
+
+      const header = () => {
+        const st = A.saleStatus(sale), now = Date.now();
+        $("saleStatus").innerHTML = (st === "live" ? '<span class="live-dot"></span>&nbsp; Live online auction' : st === "upcoming" ? "Upcoming online auction" : "Auction results") + ` · Sale ${sale.code}`;
+        const sold = sale.lots.filter(l => A.status(sale, l) === "closed" && A.result(sale, l).sold);
+        const total = sold.reduce((n, l) => n + (sale.past ? A.result(sale, l).price : A.withPremium(A.result(sale, l).price)), 0);
+        $("saleMeta").innerHTML = st === "live"
+          ? `<div><small>Lots begin closing in</small><strong data-sale-cd>${A.fmt(A.saleStart(sale) - now)}</strong></div>
+             <div><small>First lot closes</small><strong>${A.date(A.saleStart(sale))}</strong></div>
+             <div><small>Closing interval</small><strong>${sale.stagger} min per lot</strong></div>
+             <div><small>Lots</small><strong>${sale.lots.length}</strong></div>`
+          : st === "upcoming"
+          ? `<div><small>Bidding opens</small><strong>${A.date(A.opensAt(sale))}</strong></div>
+             <div><small>Lots begin closing</small><strong>${A.date(A.saleStart(sale))}</strong></div>
+             <div><small>Lots</small><strong>${sale.lots.length}</strong></div>`
+          : `<div><small>Sale total</small><strong>${A.usd(total)}</strong></div>
+             <div><small>Sold by lot</small><strong>${Math.round(sold.length / sale.lots.length * 100)}%</strong></div>
+             <div><small>Lots</small><strong>${sale.lots.length}</strong></div>`;
+        const r = A.reg();
+        $("regBanner").innerHTML = st === "closed" ? "" : r
+          ? `<div class="reg-banner"><span>Bidding as <strong>${r.name}</strong> · Paddle <strong>${r.paddle}</strong></span><a class="link" href="auctions.html#mybids">My bids</a></div>`
+          : `<div class="reg-banner"><span><strong>Register to bid in this sale.</strong> Free, and it covers every online auction.</span><button class="btn btn-dark" data-register style="height:40px">Register to Bid</button></div>`;
+      };
+
+      const render = () => {
+        header();
+        let lots = sale.lots.slice();
+        if (q) lots = lots.filter(l => (l.title + " " + l.artist + " " + l.medium).toLowerCase().includes(q));
+        if (show === "open") lots = lots.filter(l => A.status(sale, l) !== "closed");
+        if (show === "mine") lots = lots.filter(l => !sale.past && A.youBid(A.state(sale, l)));
+        if (show === "watch") lots = lots.filter(l => !sale.past && A.watching(sale, l));
+        const bidsOf = l => sale.past ? l.bids : A.state(sale, l).bids.length;
+        if (sort === "closing") lots.sort((a, b) => A.endsAt(sale, a) - A.endsAt(sale, b));
+        if (sort === "low") lots.sort((a, b) => a.estLow - b.estLow);
+        if (sort === "high") lots.sort((a, b) => b.estLow - a.estLow);
+        if (sort === "bids") lots.sort((a, b) => bidsOf(b) - bidsOf(a));
+        $("lotCount").textContent = `Showing ${lots.length} of ${sale.lots.length} lots`;
+        $("lots").innerHTML = lots.length ? lots.map(l => A.lotCard(sale, l)).join("")
+          : `<div class="no-results" style="grid-column:1/-1"><h2>No lots to show</h2><p class="muted">Try another filter.</p></div>`;
+      };
+
+      $("lotSearch").addEventListener("input", e => { q = e.target.value.trim().toLowerCase(); render(); });
+      $("lotSort").addEventListener("change", e => { sort = e.target.value; render(); });
+      document.querySelectorAll("[data-show]").forEach(b => b.addEventListener("click", () => {
+        show = b.dataset.show;
+        document.querySelectorAll("[data-show]").forEach(x => x.classList.toggle("on", x === b));
+        render();
+      }));
+      document.addEventListener("click", e => { if (e.target.closest("[data-register]")) A.requireReg(render); });
+
+      render();
+      setInterval(() => { const el = document.querySelector("[data-sale-cd]"); if (el) el.textContent = A.fmt(A.saleStart(sale) - Date.now()); }, 1000);
+      A.run(e => { if (!e.sale || e.sale === sale) render(); });
+    });
+  </script>
+</body>
+</html>

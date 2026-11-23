@@ -54,7 +54,6 @@
 
   /* ---------- product card ---------- */
   HG.card = (p) => {
-    const d = HG.dealer(p.dealer);
     return `<article class="card">
       <a class="card-img" href="product.html?id=${p.id}">
         <img src="${HG.img(p.img)}" alt="${p.name}" loading="lazy">
@@ -62,33 +61,55 @@
       </a>
       <button class="fav ${HG.favs.has(p.id) ? "on" : ""}" data-fav="${p.id}" aria-label="Save ${p.name}">${ico.heart}</button>
       <a class="card-body" href="product.html?id=${p.id}">
-        <h3>${p.name}</h3>
+        ${p.artist ? `<p class="card-artist">${p.artist}</p>` : ""}
+        <h3 class="${p.artist ? "work-title" : ""}">${p.name}</h3>
+        ${p.artist ? `<p class="meta">${p.material}</p>` : `<p class="meta">${p.sub} · ${p.period.replace("-", "–")}</p>`}
         <p class="price">${p.was ? `<s>${HG.money(p.was)}</s> ` : ""}${HG.money(p.price)}</p>
-        <p class="meta">${d ? d.city : ""}</p>
       </a>
     </article>`;
   };
 
   /* ---------- header ---------- */
   function header() {
-    const nav = HG.categories.map((c) => `
+    const mega = (c) => `
       <li class="has-mega">
         <a href="shop.html?cat=${c.slug}">${c.name}</a>
         <div class="mega">
           <div class="mega-inner">
-            <div><h4>Shop ${c.name}</h4><ul>${c.subs.map((s) => `<li><a href="shop.html?cat=${c.slug}&sub=${encodeURIComponent(s)}">${s}</a></li>`).join("")}<li><a class="all" href="shop.html?cat=${c.slug}">View all ${c.name}</a></li></ul></div>
-            <div><h4>Shop by Style</h4><ul>${HG.styles.slice(0, 6).map((s) => `<li><a href="shop.html?cat=${c.slug}&style=${encodeURIComponent(s)}">${s}</a></li>`).join("")}</ul></div>
-            <a class="mega-feature" href="shop.html?cat=${c.slug}"><img src="${HG.img(c.img)}" alt="" loading="lazy"><span>New in ${c.name}</span></a>
+            <div><h4>${c.name}</h4><ul>${c.subs.map((s) => `<li><a href="shop.html?cat=${c.slug}&sub=${encodeURIComponent(s)}">${s}</a></li>`).join("")}<li><a class="all" href="shop.html?cat=${c.slug}">View all ${c.name}</a></li></ul></div>
+            <div><h4>Explore</h4><ul>
+              <li><a href="shop.html?cat=${c.slug}&new=1">New to the Gallery</a></li>
+              ${HG.styles.slice(0, 5).map((s) => `<li><a href="shop.html?cat=${c.slug}&style=${encodeURIComponent(s)}">${s}</a></li>`).join("")}
+              <li><a href="auctions.html">${c.name} at Auction</a></li></ul></div>
+            <a class="mega-feature" href="shop.html?cat=${c.slug}"><img src="${HG.img(c.feature)}" alt="" loading="lazy"><span>${c.name}<small>${c.blurb}</small></span></a>
           </div>
         </div>
-      </li>`).join("");
+      </li>`;
+    const sales = (HG.sales || []).filter((s) => !s.past);
+    const auctionMega = `
+      <li class="has-mega">
+        <a href="auctions.html" class="nav-auction">Auction</a>
+        <div class="mega">
+          <div class="mega-inner">
+            <div><h4>Auctions</h4><ul>
+              <li><a href="auctions.html">Live &amp; Upcoming</a></li>
+              <li><a href="auctions.html#results">Past Results</a></li>
+              <li><a href="auctions.html#mybids">My Bids &amp; Watchlist</a></li>
+              <li><a href="auctions.html#how">How to Bid</a></li>
+              <li><a href="index.html#consign">Consign to Auction</a></li></ul></div>
+            <div><h4>Current Sales</h4><ul>${sales.map((s) => `<li><a href="sale.html?id=${s.id}">${s.title}</a></li>`).join("")}</ul></div>
+            <a class="mega-feature" href="auctions.html"><img src="${HG.img("gallery-auction.jpg")}" alt="" loading="lazy"><span>The Saleroom<small>Bid live online from anywhere in the world.</small></span></a>
+          </div>
+        </div>
+      </li>`;
 
     return `
     <div class="topbar">
-      <p>Buyer Protection Guaranteed on every purchase · White-glove delivery worldwide</p>
+      <p>An art gallery for paintings, vintage design and fine watches · Viewing by appointment</p>
       <div class="topbar-right">
-        <a href="#trade">Trade Program</a>
-        <a href="#sell">Sell on Hare &amp; Grouse</a>
+        <a href="index.html#journal">The Journal</a>
+        <a href="index.html#consign">Consign</a>
+        <a href="auctions.html#mybids">My Bids</a>
         <label class="cur"><span class="sr">Currency</span>
           <select id="currency">${Object.keys(RATES).map((k) => `<option ${k === HG.currency ? "selected" : ""}>${k}</option>`).join("")}</select>
         </label>
@@ -98,7 +119,7 @@
       <div class="header-row">
         <button class="icon-btn only-mobile" id="menuBtn" aria-label="Open menu">${ico.menu}</button>
         <form class="search" id="searchForm" role="search" action="shop.html">
-          ${ico.search}<input id="searchInput" name="q" type="search" placeholder="Search furniture, art, jewelry and more" autocomplete="off">
+          ${ico.search}<input id="searchInput" name="q" type="search" placeholder="Search artists, works, watches and lots" autocomplete="off">
           <div class="search-results" id="searchResults"></div>
         </form>
         <a class="brand" href="index.html" aria-label="Hare &amp; Grouse home">
@@ -107,7 +128,7 @@
         </a>
         <div class="actions">
           <button class="icon-btn only-mobile" id="searchBtn" aria-label="Search">${ico.search}</button>
-          <a class="icon-btn hide-mobile" href="#login" aria-label="Account">${ico.user}<span class="lbl">Log In</span></a>
+          <a class="icon-btn hide-mobile" href="auctions.html#mybids" aria-label="Account">${ico.user}<span class="lbl" id="acctLbl">Log In</span></a>
           <a class="icon-btn" href="shop.html?favs=1" aria-label="Favorites">${ico.heart}<span class="count" id="favCount"></span></a>
           <button class="icon-btn" id="bagBtn" aria-label="Shopping bag">${ico.bag}<span class="count" id="bagCount"></span></button>
         </div>
@@ -115,11 +136,8 @@
       <nav class="main-nav" id="mainNav" aria-label="Main">
         <div class="mobile-nav-head only-mobile"><img src="assets/img/wordmark.png" alt="Hare &amp; Grouse"><button class="icon-btn" id="menuClose" aria-label="Close menu">${ico.close}</button></div>
         <ul>
-          <li><a href="shop.html?new=1">New Arrivals</a></li>
-          ${nav}
-          <li><a href="index.html#dealers">Dealers</a></li>
-          <li><a class="sale" href="shop.html?sale=1">Sale</a></li>
-          <li><a href="index.html#journal">The Journal</a></li>
+          ${HG.categories.map(mega).join("")}
+          ${auctionMega}
         </ul>
       </nav>
     </header>`;
@@ -130,10 +148,10 @@
     return `
     <section class="trust">
       <div class="wrap trust-grid">
-        <div><h4>Buyer Protection</h4><p>Every order is covered from checkout to delivery, or your money back.</p></div>
-        <div><h4>Vetted Dealers</h4><p>Only the world's most trusted galleries and specialists sell here.</p></div>
+        <div><h4>Authenticity Guaranteed</h4><p>Every work is researched, documented and backed by our guarantee.</p></div>
+        <div><h4>Specialist Advice</h4><p>Speak to our art, design and horology specialists before you buy or bid.</p></div>
         <div><h4>Secure Payments</h4><p>Pay by card, bank transfer or Paystack with full encryption.</p></div>
-        <div><h4>Insured Global Shipping</h4><p>Fully insured white-glove delivery to more than 120 countries.</p></div>
+        <div><h4>Insured Global Shipping</h4><p>Fine-art couriers and insured delivery to more than 120 countries.</p></div>
       </div>
     </section>
     <footer class="site-footer">
@@ -141,14 +159,14 @@
         <div class="newsletter">
           <img src="assets/img/monogram-white.png" alt="" class="foot-mono">
           <h3>Be the first to know</h3>
-          <p>New arrivals, private sales and stories from The Journal, delivered weekly.</p>
+          <p>New works, auction previews and stories from The Journal, delivered weekly.</p>
           <form id="newsForm"><input type="email" required placeholder="Your email address" aria-label="Email address"><button class="btn btn-gold">Sign Up</button></form>
         </div>
         <div class="foot-cols">
           <div><h4>Shop</h4><ul>${HG.categories.map((c) => `<li><a href="shop.html?cat=${c.slug}">${c.name}</a></li>`).join("")}</ul></div>
-          <div><h4>About</h4><ul><li><a href="#">Our Story</a></li><li><a href="#">The Journal</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li><li><a href="#">Contact</a></li></ul></div>
-          <div><h4>Customer Care</h4><ul><li><a href="#">Help Centre</a></li><li><a href="#">Buyer Protection</a></li><li><a href="#">Shipping &amp; Returns</a></li><li><a href="#">Track an Order</a></li><li><a href="#">Make an Offer</a></li></ul></div>
-          <div><h4>Programs</h4><ul><li><a href="#trade">Trade Program</a></li><li><a href="#sell">Sell With Us</a></li><li><a href="#">Gift Cards</a></li><li><a href="#">Affiliate</a></li></ul></div>
+          <div><h4>About</h4><ul><li><a href="#">The Gallery</a></li><li><a href="#">Artists</a></li><li><a href="index.html#journal">The Journal</a></li><li><a href="#">Exhibitions</a></li><li><a href="index.html#visit">Visit &amp; Contact</a></li></ul></div>
+          <div><h4>Customer Care</h4><ul><li><a href="#">Help Centre</a></li><li><a href="#">Conditions of Sale</a></li><li><a href="#">Shipping &amp; Returns</a></li><li><a href="#">Track an Order</a></li><li><a href="#">Make an Enquiry</a></li></ul></div>
+          <div><h4>Auctions</h4><ul><li><a href="auctions.html">Live Auctions</a></li><li><a href="auctions.html#results">Past Results</a></li><li><a href="auctions.html#how">How to Bid</a></li><li><a href="index.html#consign">Consign</a></li></ul></div>
         </div>
       </div>
       <div class="wrap footer-bottom">
@@ -179,7 +197,7 @@
     body.innerHTML = items.map((p) => `
       <div class="bag-item">
         <img src="${HG.img(p.img)}" alt="">
-        <div><a href="product.html?id=${p.id}">${p.name}</a><p class="muted">${HG.dealer(p.dealer).name}</p><strong>${HG.money(p.price)}</strong></div>
+        <div><a href="product.html?id=${p.id}">${p.name}</a><p class="muted">${HG.byline(p)}</p><strong>${HG.money(p.price)}</strong></div>
         <button class="link" data-remove="${p.id}">Remove</button>
       </div>`).join("");
     const total = items.reduce((s, p) => s + p.price, 0);
@@ -223,7 +241,7 @@
     q = q.trim().toLowerCase();
     if (!q) return [];
     return HG.products.filter((p) =>
-      [p.name, p.cat, p.sub, p.style, p.material, p.period].join(" ").toLowerCase().includes(q));
+      [p.name, p.artist, p.cat, p.sub, p.style, p.material, p.period].join(" ").toLowerCase().includes(q));
   }
   HG.search = search;
 
@@ -233,6 +251,7 @@
     $("#hg-footer").outerHTML = footer();
     updateCounts();
     renderBag();
+    try { const r = JSON.parse(localStorage.getItem("hg_auction_v1") || "{}").reg; if (r) $("#acctLbl").textContent = "Paddle " + r.paddle; } catch (e) {}
 
     $("#currency").addEventListener("change", (e) => {
       store.set("cur", e.target.value);
@@ -252,11 +271,14 @@
 
     const input = $("#searchInput"), res = $("#searchResults");
     input.addEventListener("input", () => {
-      const r = search(input.value).slice(0, 6);
-      res.innerHTML = r.length
-        ? r.map((p) => `<a href="product.html?id=${p.id}"><img src="${HG.img(p.img)}" alt=""><span>${p.name}<small>${HG.catName(p.cat)} · ${HG.money(p.price)}</small></span></a>`).join("") +
+      const r = search(input.value).slice(0, 5), q = input.value.trim().toLowerCase();
+      const lots = [];
+      if (q) (HG.sales || []).forEach((s) => s.lots.forEach((l) => (l.title + " " + l.artist).toLowerCase().includes(q) && lots.push([s, l])));
+      res.innerHTML = r.length || lots.length
+        ? r.map((p) => `<a href="product.html?id=${p.id}"><img src="${HG.img(p.img)}" alt=""><span>${p.name}<small>${p.artist ? p.artist + " · " : ""}${HG.catName(p.cat)} · ${HG.money(p.price)}</small></span></a>`).join("") +
+          lots.slice(0, 3).map(([s, l]) => `<a href="lot.html?sale=${s.id}&lot=${l.n}"><img src="${HG.img(l.img)}" alt=""><span>${l.title}<small>Auction · Lot ${l.n} · ${s.title}</small></span></a>`).join("") +
           `<a class="see-all" href="shop.html?q=${encodeURIComponent(input.value)}">See all results for “${input.value}”</a>`
-        : input.value ? '<p class="none">No matches yet. Try “chair”, “Art Deco” or “gold”.</p>' : "";
+        : input.value ? '<p class="none">No matches yet. Try “oil”, “abstract” or “chronograph”.</p>' : "";
       res.classList.toggle("on", !!input.value);
     });
     input.addEventListener("blur", () => setTimeout(() => res.classList.remove("on"), 200));

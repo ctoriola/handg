@@ -4,11 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shop | Hare &amp; Grouse</title>
-  <meta name="description" content="Browse antique and vintage furniture, lighting, décor, art, jewelry, fashion and watches at Hare & Grouse.">
+  <meta name="description" content="Browse paintings, works on paper, vintage design and fine watches at the Hare & Grouse gallery.">
+  <meta name="theme-color" content="#031706">
   <link rel="icon" href="assets/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -26,10 +27,10 @@
           <div class="price-range"><input type="number" id="fMin" placeholder="Min $" min="0"><span>–</span><input type="number" id="fMax" placeholder="Max $" min="0"></div>
         </div></details>
         <details class="filter" open><summary>Style</summary><div class="opts" id="fStyle"></div></details>
-        <details class="filter"><summary>Dealer Location</summary><div class="opts" id="fDealer"></div></details>
+        <details class="filter"><summary>Artist</summary><div class="opts" id="fDealer"></div></details>
         <details class="filter"><summary>Offers</summary><div class="opts">
           <label><input type="checkbox" id="fSale"> On Sale</label>
-          <label><input type="checkbox" id="fNew"> New Arrivals</label>
+          <label><input type="checkbox" id="fNew"> New to the Gallery</label>
           <label><input type="checkbox" id="fFav"> My Favorites</label>
         </div></details>
       </aside>
@@ -58,6 +59,7 @@
   <div id="hg-footer"></div>
 
   <script src="assets/js/data.js"></script>
+  <script src="assets/js/auction-data.js"></script>
   <script src="assets/js/app.js"></script>
   <script>
     document.addEventListener("hg:ready", () => {
@@ -67,7 +69,7 @@
         cats: new Set(qs.get("cat") ? [qs.get("cat")] : []),
         sub: qs.get("sub") || "",
         styles: new Set(qs.get("style") ? [qs.get("style")] : []),
-        dealers: new Set(qs.get("dealer") ? [qs.get("dealer")] : []),
+        dealers: new Set(qs.get("artist") ? [qs.get("artist")] : []),
         sale: qs.has("sale"), isNew: qs.has("new"), fav: qs.has("favs"),
         q: qs.get("q") || "", min: "", max: "", sort: "rec"
       };
@@ -78,7 +80,7 @@
         return `<label><input type="checkbox" value="${c.slug}" ${state.cats.has(c.slug) ? "checked" : ""}> ${c.name} <span class="muted">(${n})</span></label>`;
       }).join("");
       $("fStyle").innerHTML = HG.styles.map(s => `<label><input type="checkbox" value="${s}" ${state.styles.has(s) ? "checked" : ""}> ${s}</label>`).join("");
-      $("fDealer").innerHTML = HG.dealers.map(d => `<label><input type="checkbox" value="${d.id}" ${state.dealers.has(d.id) ? "checked" : ""}> ${d.city}</label>`).join("");
+      $("fDealer").innerHTML = [...new Set(HG.products.filter(p => p.artistId).map(p => p.artist))].map(a => `<label><input type="checkbox" value="${a}" ${state.dealers.has(a) ? "checked" : ""}> ${a}</label>`).join("");
       $("fSale").checked = state.sale; $("fNew").checked = state.isNew; $("fFav").checked = state.fav;
 
       const bindSet = (id, set) => $(id).addEventListener("change", e => {
@@ -101,7 +103,7 @@
         if (state.cats.size) list = list.filter(p => state.cats.has(p.cat));
         if (state.sub) list = list.filter(p => p.sub === state.sub);
         if (state.styles.size) list = list.filter(p => state.styles.has(p.style));
-        if (state.dealers.size) list = list.filter(p => state.dealers.has(p.dealer));
+        if (state.dealers.size) list = list.filter(p => state.dealers.has(p.artist));
         if (state.sale) list = list.filter(p => p.sale);
         if (state.isNew) list = list.filter(p => p.isNew);
         if (state.fav) list = list.filter(p => HG.favs.has(p.id));
@@ -113,12 +115,12 @@
 
         // title + crumbs
         const one = state.cats.size === 1 ? [...state.cats][0] : null;
-        let title = state.q ? `Results for “${state.q}”` : state.fav ? "My Favorites" : state.sub || (one ? HG.catName(one) : state.styles.size === 1 ? [...state.styles][0] : state.sale ? "Sale" : state.isNew ? "New Arrivals" : "All Items");
+        let title = state.q ? `Results for “${state.q}”` : state.fav ? "My Favorites" : state.sub || (one ? HG.catName(one) : state.styles.size === 1 ? [...state.styles][0] : state.sale ? "Sale" : state.isNew ? "New to the Gallery" : "All Items");
         $("title").textContent = title;
         document.title = title + " | Hare & Grouse";
         $("intro").textContent = one
-          ? `Discover ${HG.catName(one).toLowerCase()} sourced by our network of vetted dealers, from rare antiques to the finest contemporary design.`
-          : "Every piece is offered by a vetted dealer and protected by our Buyer Protection guarantee.";
+          ? HG.categories.find(c => c.slug === one).blurb
+          : "Every work is researched, documented and backed by the Hare & Grouse authenticity guarantee.";
         $("crumbs").innerHTML = `<a href="index.html">Home</a> / <a href="shop.html">Shop</a>` +
           (one ? ` / <a href="shop.html?cat=${one}">${HG.catName(one)}</a>` : "") + (state.sub ? ` / ${state.sub}` : "");
 
@@ -126,7 +128,7 @@
         const chips = [];
         if (state.sub) chips.push(["sub", "", state.sub]);
         state.styles.forEach(s => chips.push(["styles", s, s]));
-        state.dealers.forEach(d => chips.push(["dealers", d, HG.dealer(d).city]));
+        state.dealers.forEach(d => chips.push(["dealers", d, d]));
         if (state.q) chips.push(["q", "", `“${state.q}”`]);
         $("chips").innerHTML = chips.map(([k, v, l]) => `<button class="chip" data-k="${k}" data-v="${v}">${l} ✕</button>`).join("");
         $("count").textContent = `${list.length} item${list.length === 1 ? "" : "s"}`;

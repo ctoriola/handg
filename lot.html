@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lot | Hare &amp; Grouse Auctions</title>
+  <meta name="theme-color" content="#031706">
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="hg-header"></div>
+
+  <main class="wrap">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+    <div class="lot-page">
+      <div class="lot-media">
+        <div class="main-img" id="mainImg"><img id="lotImg" src="" alt=""></div>
+        <div class="lot-nav" id="lotNav"></div>
+      </div>
+
+      <div class="lot-info">
+        <span class="lot-no" id="lotNo"></span>
+        <p class="lot-artist" id="lotArtist"></p>
+        <h1 id="lotTitle"></h1>
+        <p class="muted" id="lotMedium"></p>
+        <p class="est" id="lotEst"></p>
+
+        <div class="bid-panel" id="bidPanel" aria-live="polite"></div>
+
+        <div class="history" id="historyWrap">
+          <h3>Bid History <span class="muted" id="histCount"></span></h3>
+          <ol id="history"></ol>
+        </div>
+
+        <div class="specs" style="margin-top:28px">
+          <details open><summary>Lot Details</summary>
+            <dl>
+              <dt>Artist / Maker</dt><dd id="dArtist"></dd>
+              <dt>Medium</dt><dd id="dMedium"></dd>
+              <dt>Dimensions</dt><dd id="dDims"></dd>
+              <dt>Estimate</dt><dd id="dEst"></dd>
+              <dt>Sale</dt><dd id="dSale"></dd>
+            </dl>
+          </details>
+          <details><summary>Condition Report</summary><p class="txt" id="dCond"></p><p class="txt"><button class="link" id="askCond">Request a full condition report</button></p></details>
+          <details><summary>Provenance</summary><p class="txt" id="dProv"></p></details>
+          <details><summary>Buyer's Premium &amp; Payment</summary>
+            <p class="txt">A buyer's premium of 25% is added to the hammer price. Invoices are issued when the lot closes and are payable within 7 days by card, bank transfer or Paystack. Shipping is quoted separately and fully insured.</p>
+          </details>
+        </div>
+
+        <div class="dealer-card">
+          <img src="assets/img/favicon.png" alt="">
+          <div><h4>Speak to a Specialist</h4><p class="muted small">Questions about this lot? Our team replies within one working day.</p></div>
+          <a class="btn btn-outline" href="#" id="askSpec">Enquire</a>
+        </div>
+      </div>
+    </div>
+
+    <section style="padding-top:0">
+      <div class="sec-head"><div><span class="eyebrow">In This Sale</span><h2>More Lots</h2></div><a class="text-link" id="allLots" href="#">View All Lots</a></div>
+      <div class="grid" id="moreLots"></div>
+    </section>
+  </main>
+
+  <div id="hg-footer"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auction-data.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auction.js"></script>
+  <script>
+    document.addEventListener("hg:ready", () => {
+      const $ = id => document.getElementById(id), A = HG.auction, qs = new URLSearchParams(location.search);
+      const sale = HG.sale(qs.get("sale")) || HG.sales[0];
+      const lot = A.lot(sale, qs.get("lot")) || sale.lots[0];
+      let chosen = null, lastBidCount = -1;
+
+      document.title = `Lot ${lot.n}: ${lot.title} | Hare & Grouse Auctions`;
+      $("crumbs").innerHTML = `<a href="index.html">Home</a> / <a href="auctions.html">Auctions</a> / <a href="sale.html?id=${sale.id}">${sale.title}</a> / Lot ${lot.n}`;
+      $("lotImg").src = HG.img(lot.img); $("lotImg").alt = `${lot.title} by ${lot.artist}`;
+      $("lotNo").textContent = `Lot ${lot.n} · ${sale.title}`;
+      $("lotArtist").textContent = lot.artist;
+      $("lotTitle").textContent = lot.title;
+      $("lotMedium").textContent = `${lot.medium} · ${lot.dims}`;
+      $("lotEst").innerHTML = `Estimate ${A.usd(lot.estLow)} – ${A.usd(lot.estHigh)}${A.approx(lot.estLow)}`;
+      $("dArtist").textContent = lot.artist; $("dMedium").textContent = lot.medium; $("dDims").textContent = lot.dims;
+      $("dEst").textContent = `${A.usd(lot.estLow)} – ${A.usd(lot.estHigh)}`;
+      $("dSale").innerHTML = `<a class="link" href="sale.html?id=${sale.id}">${sale.title}</a> (${sale.code})`;
+      $("dCond").textContent = lot.condition || "Condition report available on request.";
+      $("dProv").textContent = lot.provenance || "Provenance details available on request.";
+      $("allLots").href = `sale.html?id=${sale.id}`;
+
+      const i = sale.lots.indexOf(lot), prev = sale.lots[i - 1], next = sale.lots[i + 1];
+      $("lotNav").innerHTML = `<span>${prev ? `<a href="lot.html?sale=${sale.id}&lot=${prev.n}">← Lot ${prev.n}</a>` : ""}</span><span class="muted">Lot ${lot.n} of ${sale.lots.length}</span><span>${next ? `<a href="lot.html?sale=${sale.id}&lot=${next.n}">Lot ${next.n} →</a>` : ""}</span>`;
+      $("mainImg").addEventListener("click", () => $("mainImg").classList.toggle("zoom"));
+      $("mainImg").addEventListener("mousemove", e => {
+        const r = $("mainImg").getBoundingClientRect();
+        $("lotImg").style.transformOrigin = `${(e.clientX - r.left) / r.width * 100}% ${(e.clientY - r.top) / r.height * 100}%`;
+      });
+      ["askCond", "askSpec"].forEach(id => $(id).addEventListener("click", e => { e.preventDefault(); HG.toast("Request sent. A specialist will email you shortly."); }));
+
+      $("moreLots").innerHTML = sale.lots.filter(l => l !== lot).slice(0, 4).map(l => A.lotCard(sale, l)).join("");
+
+      /* ---------- bid panel ---------- */
+      function panel(msg, bad) {
+        const s = A.status(sale, lot), watch = !sale.past && A.watching(sale, lot);
+        const watchBtn = sale.past ? "" : `<button data-watch="${sale.id}:${lot.n}" class="${watch ? "on" : ""}">${watch ? "Watching" : "Watch this lot"}</button>`;
+
+        if (s === "upcoming") {
+          $("bidPanel").innerHTML = `
+            <div class="bp-top"><div><small>Starting bid</small><div class="bp-current">${A.usd(lot.start)}</div><p class="bp-sub">${A.approx(lot.start) || "Bidding has not opened yet"}</p></div>
+            <div class="countdown"><small>Bidding opens in</small><span data-opens>${A.fmt(A.opensAt(sale) - Date.now())}</span></div></div>
+            <div class="bp-status">Bidding opens ${A.date(A.opensAt(sale))}. Register now so you're ready, and watch the lot to track it in My Bids.</div>
+            <div class="bp-form">${A.reg() ? `<button class="btn btn-gold" disabled>Registered · Paddle ${A.reg().paddle}</button>` : `<button class="btn btn-gold" data-register>Register to Bid</button>`}</div>
+            <div class="bp-foot"><span>Closes ${A.date(A.endsAt(sale, lot))}</span>${watchBtn}</div>`;
+          return;
+        }
+
+        if (s === "closed") {
+          const r = A.result(sale, lot), mine = A.yours(sale, lot);
+          const head = r.sold ? (mine === "won" ? "Congratulations, you won" : "Sold") : "Unsold";
+          const body = r.sold
+            ? `Hammer price ${A.usd(r.price)}. ${sale.past ? "Price shown includes buyer's premium." : `Total with ${A.PREMIUM * 100}% buyer's premium: ${A.usd(A.withPremium(r.price))}.`}`
+            : "This lot did not reach its reserve. Contact us to make a post-sale offer.";
+          $("bidPanel").innerHTML = `<div class="bp-result"><small style="color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-size:11px">Lot closed ${A.date(A.endsAt(sale, lot))}</small>
+            <h3>${head}</h3><p>${body}</p>
+            ${mine === "won" ? `<button class="btn btn-gold" id="payBtn">Pay Invoice · ${A.usd(A.withPremium(r.price))}</button>` :
+              !r.sold ? `<button class="btn btn-outline" style="border-color:var(--gold);color:var(--gold)" id="offerBtn">Make a Post-Sale Offer</button>` : ""}</div>`;
+          $("payBtn")?.addEventListener("click", () => HG.toast("Invoice checkout connects to Paystack or Stripe."));
+          $("offerBtn")?.addEventListener("click", () => HG.toast("Offer request sent to our specialists."));
+          return;
+        }
+
+        const st = A.state(sale, lot), cur = A.current(st), min = A.nextMin(sale, lot), y = A.yours(sale, lot);
+        const leading = y === "leading";
+        const quick = leading ? [st.yourMax + A.inc(st.yourMax)] : [min];
+        while (quick.length < 3) { const l = quick[quick.length - 1]; quick.push(l + A.inc(l)); }
+        if (!chosen || chosen < (leading ? st.yourMax + 1 : min)) chosen = quick[0];
+
+        const status = msg ? msg
+          : leading ? `You're the highest bidder. Your maximum is ${A.usd(st.yourMax)}.${A.reserveMet(sale, lot) ? "" : " The reserve has not been met yet."}`
+          : y === "outbid" ? "You've been outbid. Bid again to get back in the lead." : "";
+        const isBad = bad || (!msg && y === "outbid");
+
+        $("bidPanel").innerHTML = `
+          <div class="bp-top">
+            <div><small>${cur ? "Current bid" : "Starting bid"}</small><div class="bp-current">${A.usd(cur || lot.start)}</div>
+              <p class="bp-sub">${st.bids.length} bid${st.bids.length === 1 ? "" : "s"} · ${lot.reserve ? (A.reserveMet(sale, lot) ? "Reserve met" : "Reserve not met") : "No reserve"}${A.approx(cur || lot.start)}</p></div>
+            <div class="countdown" id="cd"><small>Closes in</small><span data-countdown="${sale.id}:${lot.n}">${A.fmt(A.endsAt(sale, lot) - Date.now())}</span></div>
+          </div>
+          <div class="bp-status ${isBad ? "bad" : ""}">${status}</div>
+          <div class="bp-form">
+            <small style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)">${leading ? "Raise your maximum" : "Choose your bid"}</small>
+            <div class="quick">${quick.map(v => `<button data-q="${v}" class="${v === chosen ? "on" : ""}">${A.usd(v)}</button>`).join("")}</div>
+            <div class="maxrow">
+              <label><span>$</span><input id="maxIn" type="number" inputmode="numeric" min="${leading ? st.yourMax + 1 : min}" step="1" value="${chosen}" aria-label="Maximum bid in US dollars"></label>
+              <button class="btn btn-gold" id="placeBid">${leading ? "Raise Max" : "Place Bid"}</button>
+            </div>
+            <p class="bp-note">Enter any amount from ${A.usd(leading ? st.yourMax + 1 : min)}. We'll bid for you up to this maximum, one increment at a time.</p>
+          </div>
+          <div class="bp-foot"><span>Closes ${A.date(A.endsAt(sale, lot))} · 2-minute soft close</span>${watchBtn}</div>`;
+
+        document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => { chosen = +b.dataset.q; $("maxIn").value = chosen; document.querySelectorAll("[data-q]").forEach(x => x.classList.toggle("on", x === b)); }));
+        $("maxIn").addEventListener("input", e => { chosen = +e.target.value; document.querySelectorAll("[data-q]").forEach(x => x.classList.toggle("on", +x.dataset.q === chosen)); });
+        $("placeBid").addEventListener("click", () => {
+          const v = Math.round(+$("maxIn").value);
+          const floor = leading ? st.yourMax + 1 : min;
+          if (!v || v < floor) { panel(`Please enter at least ${A.usd(floor)}.`, true); return; }
+          if (v > lot.estHigh * 5) { panel(`That's more than five times the high estimate. Please check the amount, or call us to bid above ${A.usd(lot.estHigh * 5)}.`, true); return; }
+          A.confirmBid(sale, lot, v, res => {
+            chosen = null;
+            panel(res.message + (res.extended ? " The lot has been extended by 2 minutes." : ""), !res.ok || res.outcome === "outbid");
+            history();
+            HG.toast(res.ok ? (res.outcome === "outbid" ? "Outbid" : "Bid placed") : res.message);
+          });
+        });
+      }
+
+      function history() {
+        if (sale.past) { $("historyWrap").innerHTML = `<p class="muted small">${lot.bids || 0} bids were placed on this lot.</p>`; return; }
+        const st = A.state(sale, lot);
+        $("histCount").textContent = `(${st.bids.length})`;
+        const fresh = lastBidCount >= 0 && st.bids.length > lastBidCount ? st.bids.length - lastBidCount : 0;
+        lastBidCount = st.bids.length;
+        $("history").innerHTML = st.bids.length ? [...st.bids].reverse().map((b, k) => `
+          <li class="${b.you ? "you" : ""} ${k < fresh ? "new" : ""}"><span>${b.you ? "You · Paddle " + b.p : "Paddle " + b.p}${b.auto ? ' <span class="muted small">(auto-bid)</span>' : ""}</span><strong>${A.usd(b.a)}</strong><span class="t">${new Date(b.t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></li>`).join("")
+          : `<li><span class="muted">No bids yet. Be the first.</span></li>`;
+      }
+
+      panel(); history();
+      document.addEventListener("click", e => { if (e.target.closest("[data-register]")) A.requireReg(() => panel()); });
+      document.addEventListener("hg:registered", () => panel());
+      document.addEventListener("click", e => { if (e.target.closest("#bidPanel [data-watch]")) setTimeout(() => panel(), 0); });
+      setInterval(() => { const el = document.querySelector("[data-opens]"); if (el) { const ms = A.opensAt(sale) - Date.now(); el.textContent = A.fmt(ms); if (ms <= 0) panel(); } }, 1000);
+      A.run(e => {
+        if (e.lot === lot) {
+          // keep the user's typed amount if they're mid-entry
+          const typing = document.activeElement && document.activeElement.id === "maxIn";
+          if (!typing) panel(); history();
+        }
+        if (e.sale === sale) $("moreLots").innerHTML = sale.lots.filter(l => l !== lot).slice(0, 4).map(l => A.lotCard(sale, l)).join("");
+      });
+    });
+  </script>
+</body>
+</html>
