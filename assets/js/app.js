@@ -144,7 +144,7 @@
 
     return `
     <div class="topbar">
-      <p>Art gallery · Abuja, Nigeria · “What we have is Art.”</p>
+      <p>Art gallery · Abuja, Nigeria · Creating pantomaths through arts</p>
       <div class="topbar-right">
         <a href="index.html#journal">The Journal</a>
         <a href="index.html#consign">Consign</a>

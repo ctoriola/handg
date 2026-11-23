@@ -1,6 +1,6 @@
 # Hare & Grouse
 
-Website for Hare & Grouse, an art gallery in Abuja, Nigeria ([@hare_and_grouse](https://www.instagram.com/hare_and_grouse/)). Its motto: "What we have is Art. We aim at creating pantomaths through art." It has four main sections: **Art**, **Vintage**, **Watches** and **Auction**. It is a plain HTML, CSS and JavaScript site with no build step.
+Website for Hare & Grouse, an art gallery in Abuja, Nigeria ([@hare_and_grouse](https://www.instagram.com/hare_and_grouse/)). Its tagline: "Creating pantomaths through arts." It has four main sections: **Art**, **Vintage**, **Watches** and **Auction**. It is a plain HTML, CSS and JavaScript site with no build step.
 
 Brand colours: deep green `#031706`, gold `#CD9A49` and white `#FFFFFF`. They are defined as tokens at the top of `assets/css/styles.css`.
 
