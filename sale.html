@@ -94,7 +94,7 @@
           ? `<div><small>Bidding opens</small><strong>${A.date(A.opensAt(sale))}</strong></div>
              <div><small>Lots begin closing</small><strong>${A.date(A.saleStart(sale))}</strong></div>
              <div><small>Lots</small><strong>${sale.lots.length}</strong></div>`
-          : `<div><small>Sale total</small><strong>${A.usd(total)}</strong></div>
+          : `<div><small>Sale total</small><strong>${A.money(total)}</strong></div>
              <div><small>Sold by lot</small><strong>${Math.round(sold.length / sale.lots.length * 100)}%</strong></div>
              <div><small>Lots</small><strong>${sale.lots.length}</strong></div>`;
         const r = A.reg();

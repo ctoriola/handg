@@ -87,9 +87,9 @@
       $("lotArtist").textContent = lot.artist;
       $("lotTitle").textContent = lot.title;
       $("lotMedium").textContent = `${lot.medium} · ${lot.dims}`;
-      $("lotEst").innerHTML = `Estimate ${A.usd(lot.estLow)} – ${A.usd(lot.estHigh)}${A.approx(lot.estLow)}`;
+      $("lotEst").innerHTML = `Estimate ${A.money(lot.estLow)} – ${A.money(lot.estHigh)}${A.ref(lot.estLow)}`;
       $("dArtist").textContent = lot.artist; $("dMedium").textContent = lot.medium; $("dDims").textContent = lot.dims;
-      $("dEst").textContent = `${A.usd(lot.estLow)} – ${A.usd(lot.estHigh)}`;
+      $("dEst").textContent = `${A.money(lot.estLow)} – ${A.money(lot.estHigh)}`;
       $("dSale").innerHTML = `<a class="link" href="sale.html?id=${sale.id}">${sale.title}</a> (${sale.code})`;
       $("dCond").textContent = lot.condition || "Condition report available on request.";
       $("dProv").textContent = lot.provenance || "Provenance details available on request.";
@@ -113,7 +113,7 @@
 
         if (s === "upcoming") {
           $("bidPanel").innerHTML = `
-            <div class="bp-top"><div><small>Starting bid</small><div class="bp-current">${A.usd(lot.start)}</div><p class="bp-sub">${A.approx(lot.start) || "Bidding has not opened yet"}</p></div>
+            <div class="bp-top"><div><small>Starting bid</small><div class="bp-current">${A.money(lot.start)}</div><p class="bp-sub">${A.ref(lot.start) || "Bidding has not opened yet"}</p></div>
             <div class="countdown"><small>Bidding opens in</small><span data-opens>${A.fmt(A.opensAt(sale) - Date.now())}</span></div></div>
             <div class="bp-status">Bidding opens ${A.date(A.opensAt(sale))}. Register now so you're ready, and watch the lot to track it in My Bids.</div>
             <div class="bp-form">${A.reg() ? `<button class="btn btn-gold" disabled>Registered · Paddle ${A.reg().paddle}</button>` : `<button class="btn btn-gold" data-register>Register to Bid</button>`}</div>
@@ -125,11 +125,11 @@
           const r = A.result(sale, lot), mine = A.yours(sale, lot);
           const head = r.sold ? (mine === "won" ? "Congratulations, you won" : "Sold") : "Unsold";
           const body = r.sold
-            ? `Hammer price ${A.usd(r.price)}. ${sale.past ? "Price shown includes buyer's premium." : `Total with ${A.PREMIUM * 100}% buyer's premium: ${A.usd(A.withPremium(r.price))}.`}`
+            ? `Hammer price ${A.money(r.price)}. ${sale.past ? "Price shown includes buyer's premium." : `Total with ${A.PREMIUM * 100}% buyer's premium: ${A.money(A.withPremium(r.price))}.`}`
             : "This lot did not reach its reserve. Contact us to make a post-sale offer.";
           $("bidPanel").innerHTML = `<div class="bp-result"><small style="color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-size:11px">Lot closed ${A.date(A.endsAt(sale, lot))}</small>
             <h3>${head}</h3><p>${body}</p>
-            ${mine === "won" ? `<button class="btn btn-gold" id="payBtn">Pay Invoice · ${A.usd(A.withPremium(r.price))}</button>` :
+            ${mine === "won" ? `<button class="btn btn-gold" id="payBtn">Pay Invoice · ${A.money(A.withPremium(r.price))}</button>` :
               !r.sold ? `<button class="btn btn-outline" style="border-color:var(--gold);color:var(--gold)" id="offerBtn">Make a Post-Sale Offer</button>` : ""}</div>`;
           $("payBtn")?.addEventListener("click", () => HG.toast("Invoice checkout connects to Paystack or Stripe."));
           $("offerBtn")?.addEventListener("click", () => HG.toast("Offer request sent to our specialists."));
@@ -143,35 +143,37 @@
         if (!chosen || chosen < (leading ? st.yourMax + 1 : min)) chosen = quick[0];
 
         const status = msg ? msg
-          : leading ? `You're the highest bidder. Your maximum is ${A.usd(st.yourMax)}.${A.reserveMet(sale, lot) ? "" : " The reserve has not been met yet."}`
+          : leading ? `You're the highest bidder. Your maximum is ${A.money(st.yourMax)}.${A.reserveMet(sale, lot) ? "" : " The reserve has not been met yet."}`
           : y === "outbid" ? "You've been outbid. Bid again to get back in the lead." : "";
         const isBad = bad || (!msg && y === "outbid");
 
         $("bidPanel").innerHTML = `
           <div class="bp-top">
-            <div><small>${cur ? "Current bid" : "Starting bid"}</small><div class="bp-current">${A.usd(cur || lot.start)}</div>
-              <p class="bp-sub">${st.bids.length} bid${st.bids.length === 1 ? "" : "s"} · ${lot.reserve ? (A.reserveMet(sale, lot) ? "Reserve met" : "Reserve not met") : "No reserve"}${A.approx(cur || lot.start)}</p></div>
+            <div><small>${cur ? "Current bid" : "Starting bid"}</small><div class="bp-current">${A.money(cur || lot.start)}</div>
+              <p class="bp-sub">${st.bids.length} bid${st.bids.length === 1 ? "" : "s"} · ${lot.reserve ? (A.reserveMet(sale, lot) ? "Reserve met" : "Reserve not met") : "No reserve"}${A.ref(cur || lot.start)}</p></div>
             <div class="countdown" id="cd"><small>Closes in</small><span data-countdown="${sale.id}:${lot.n}">${A.fmt(A.endsAt(sale, lot) - Date.now())}</span></div>
           </div>
           <div class="bp-status ${isBad ? "bad" : ""}">${status}</div>
           <div class="bp-form">
             <small style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)">${leading ? "Raise your maximum" : "Choose your bid"}</small>
-            <div class="quick">${quick.map(v => `<button data-q="${v}" class="${v === chosen ? "on" : ""}">${A.usd(v)}</button>`).join("")}</div>
+            <div class="quick">${quick.map(v => `<button data-q="${v}" class="${v === chosen ? "on" : ""}">${A.money(v)}</button>`).join("")}</div>
             <div class="maxrow">
-              <label><span>$</span><input id="maxIn" type="number" inputmode="numeric" min="${leading ? st.yourMax + 1 : min}" step="1" value="${chosen}" aria-label="Maximum bid in US dollars"></label>
+              <label><span>${HG.sym()}</span><input id="maxIn" type="number" inputmode="numeric" min="${Math.ceil(HG.convert(leading ? st.yourMax + 1 : min))}" step="1" value="${Math.round(HG.convert(chosen))}" aria-label="Maximum bid in ${HG.currency}"></label>
               <button class="btn btn-gold" id="placeBid">${leading ? "Raise Max" : "Place Bid"}</button>
             </div>
-            <p class="bp-note">Enter any amount from ${A.usd(leading ? st.yourMax + 1 : min)}. We'll bid for you up to this maximum, one increment at a time.</p>
+            <p class="bp-note">Enter any amount from ${A.money(leading ? st.yourMax + 1 : min)}${A.ref(leading ? st.yourMax + 1 : min)}. We'll bid for you up to this maximum, one increment at a time.${HG.currency === "USD" ? "" : ` Bids are placed in US dollars at today's rate, $1 = ${HG.sym()}${HG.rate().toLocaleString("en-US", { maximumFractionDigits: 2 })}.`}</p>
           </div>
           <div class="bp-foot"><span>Closes ${A.date(A.endsAt(sale, lot))} · 2-minute soft close</span>${watchBtn}</div>`;
 
-        document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => { chosen = +b.dataset.q; $("maxIn").value = chosen; document.querySelectorAll("[data-q]").forEach(x => x.classList.toggle("on", x === b)); }));
-        $("maxIn").addEventListener("input", e => { chosen = +e.target.value; document.querySelectorAll("[data-q]").forEach(x => x.classList.toggle("on", +x.dataset.q === chosen)); });
+        document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => { chosen = +b.dataset.q; $("maxIn").value = Math.round(HG.convert(chosen)); document.querySelectorAll("[data-q]").forEach(x => x.classList.toggle("on", x === b)); }));
+        $("maxIn").addEventListener("input", e => { chosen = Math.round(A.toUSD(+e.target.value)); document.querySelectorAll("[data-q]").forEach(x => x.classList.toggle("on", +x.dataset.q === chosen)); });
         $("placeBid").addEventListener("click", () => {
-          const v = Math.round(+$("maxIn").value);
           const floor = leading ? st.yourMax + 1 : min;
-          if (!v || v < floor) { panel(`Please enter at least ${A.usd(floor)}.`, true); return; }
-          if (v > lot.estHigh * 5) { panel(`That's more than five times the high estimate. Please check the amount, or call us to bid above ${A.usd(lot.estHigh * 5)}.`, true); return; }
+          // the typed amount is in the display currency: convert to USD, allowing for rounding
+          let v = Math.round(A.toUSD(+$("maxIn").value));
+          if (v < floor && v >= floor - Math.max(1, Math.ceil(A.toUSD(1)))) v = floor;
+          if (!v || v < floor) { panel(`Please enter at least ${A.money(floor)}.`, true); return; }
+          if (v > lot.estHigh * 5) { panel(`That's more than five times the high estimate. Please check the amount, or call us to bid above ${A.money(lot.estHigh * 5)}.`, true); return; }
           A.confirmBid(sale, lot, v, res => {
             chosen = null;
             panel(res.message + (res.extended ? " The lot has been extended by 2 minutes." : ""), !res.ok || res.outcome === "outbid");
@@ -188,7 +190,7 @@
         const fresh = lastBidCount >= 0 && st.bids.length > lastBidCount ? st.bids.length - lastBidCount : 0;
         lastBidCount = st.bids.length;
         $("history").innerHTML = st.bids.length ? [...st.bids].reverse().map((b, k) => `
-          <li class="${b.you ? "you" : ""} ${k < fresh ? "new" : ""}"><span>${b.you ? "You · Paddle " + b.p : "Paddle " + b.p}${b.auto ? ' <span class="muted small">(auto-bid)</span>' : ""}</span><strong>${A.usd(b.a)}</strong><span class="t">${new Date(b.t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></li>`).join("")
+          <li class="${b.you ? "you" : ""} ${k < fresh ? "new" : ""}"><span>${b.you ? "You · Paddle " + b.p : "Paddle " + b.p}${b.auto ? ' <span class="muted small">(auto-bid)</span>' : ""}</span><strong>${A.money(b.a)}</strong><span class="t">${new Date(b.t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></li>`).join("")
           : `<li><span class="muted">No bids yet. Be the first.</span></li>`;
       }
 

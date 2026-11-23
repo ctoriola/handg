@@ -37,8 +37,12 @@
   A.resetDemo = () => { db.anchor = 0; save(); load(); };
 
   /* ---------------- money & time ---------------- */
-  A.usd = (n) => "$" + Math.round(n).toLocaleString("en-US");
-  A.approx = (n) => (HG.currency && HG.currency !== "USD" ? ` <span class="approx">≈ ${HG.money(n)}</span>` : "");
+  /* Sales are conducted in US dollars. Every amount is DISPLAYED in the visitor's chosen
+     currency at the live rate (HG.money), with the US-dollar figure alongside for reference. */
+  A.usd = (n) => "US$" + Math.round(n).toLocaleString("en-US");
+  A.money = (n) => HG.money(n);
+  A.ref = (n) => (HG.currency !== "USD" ? ` <span class="approx">(${A.usd(n)})</span>` : "");
+  A.toUSD = (local) => local / HG.rate();
   A.inc = (x) =>
     x < 1000 ? 50 : x < 2000 ? 100 : x < 5000 ? 250 : x < 10000 ? 500 :
     x < 20000 ? 1000 : x < 50000 ? 2500 : x < 100000 ? 5000 : 10000;
@@ -147,15 +151,15 @@
     if (!db.reg) return { ok: false, message: "Please register to bid first." };
 
     if (st.leader === "you") {
-      if (max <= st.yourMax) return { ok: false, message: `Your maximum is already ${A.usd(st.yourMax)}. Enter a higher amount to raise it.` };
+      if (max <= st.yourMax) return { ok: false, message: `Your maximum is already ${A.money(st.yourMax)}. Enter a higher amount to raise it.` };
       st.yourMax = max;
       if (lot.reserve && A.current(st) < lot.reserve && max >= lot.reserve) push(st, lot.reserve, "you");
       const ext = softClose(st); save();
-      return { ok: true, outcome: "raised", extended: ext, message: `Maximum bid raised to ${A.usd(max)}. You are still the highest bidder.` };
+      return { ok: true, outcome: "raised", extended: ext, message: `Maximum bid raised to ${A.money(max)}. You are still the highest bidder.` };
     }
 
     const min = A.nextMin(sale, lot);
-    if (max < min) return { ok: false, message: `The minimum bid is ${A.usd(min)}.` };
+    if (max < min) return { ok: false, message: `The minimum bid is ${A.money(min)}.` };
 
     const R = st.rivalMax, rp = roomPaddle(st);
     st.yourMax = max;
@@ -178,7 +182,7 @@
       outcome = "leading";
     }
     const ext = softClose(st); save();
-    const cur = A.usd(A.current(st));
+    const cur = A.money(A.current(st));
     return {
       ok: true, outcome, extended: ext,
       message: outcome === "leading"
@@ -204,7 +208,7 @@
       if (next > st.yourMax) {
         st.bids.push({ p: who, a: next, t: Date.now() });
         st.leader = "room"; st.rivalMax = Math.max(st.rivalMax, next);
-        events.push({ type: "outbid", sale, lot, text: `Outbid on Lot ${lot.n}: ${lot.title}. Current bid ${A.usd(next)}.` });
+        events.push({ type: "outbid", sale, lot, text: `Outbid on Lot ${lot.n}: ${lot.title}. Current bid ${A.money(next)}.` });
       } else {
         st.bids.push({ p: who, a: next, t: Date.now() });
         push(st, Math.min(st.yourMax, next + A.inc(next)), "you", true);
@@ -256,12 +260,12 @@
     let priceLine;
     if (s === "closed") {
       const r = A.result(sale, lot);
-      priceLine = r.sold ? `<span class="lbl">Sold for</span><strong>${A.usd(sale.past ? r.price : A.withPremium(r.price))}</strong>` : `<span class="lbl">Result</span><strong>Unsold</strong>`;
+      priceLine = r.sold ? `<span class="lbl">Sold for</span><strong>${A.money(sale.past ? r.price : A.withPremium(r.price))}</strong>` : `<span class="lbl">Result</span><strong>Unsold</strong>`;
     } else if (s === "upcoming") {
-      priceLine = `<span class="lbl">Starting bid</span><strong>${A.usd(lot.start)}</strong>`;
+      priceLine = `<span class="lbl">Starting bid</span><strong>${A.money(lot.start)}</strong>`;
     } else {
       const c = A.current(st);
-      priceLine = `<span class="lbl">${c ? "Current bid" : "Starting bid"}</span><strong>${A.usd(c || lot.start)}</strong><span class="muted small">${st.bids.length} bid${st.bids.length === 1 ? "" : "s"}</span>`;
+      priceLine = `<span class="lbl">${c ? "Current bid" : "Starting bid"}</span><strong>${A.money(c || lot.start)}</strong><span class="muted small">${st.bids.length} bid${st.bids.length === 1 ? "" : "s"}</span>`;
     }
     const href = `lot.html?sale=${sale.id}&lot=${lot.n}`;
     return `<article class="lot-card" data-sale="${sale.id}" data-lot="${lot.n}">
@@ -271,7 +275,7 @@
         <span class="lot-no">Lot ${lot.n}</span>
         <p class="lot-artist">${lot.artist}</p>
         <h3>${lot.title}</h3>
-        <p class="est">Estimate ${A.usd(lot.estLow)} – ${A.usd(lot.estHigh)}</p>
+        <p class="est">Estimate ${A.money(lot.estLow)} – ${A.money(lot.estHigh)}</p>
         <div class="bidline">${priceLine}</div>
         ${s === "live" ? `<p class="closes"><span class="dot"></span><span data-countdown="${sale.id}:${lot.n}">${A.fmt(A.endsAt(sale, lot) - Date.now())}</span></p>` :
           s === "upcoming" ? `<p class="closes muted">Opens ${A.date(A.opensAt(sale))}</p>` : ""}
@@ -334,10 +338,10 @@
       const m = document.getElementById("bidModal");
       document.getElementById("bidLot").textContent = `Lot ${lot.n} · ${sale.title}`;
       document.getElementById("bidRows").innerHTML = `
-        <div><span>Your maximum bid</span><strong>${A.usd(amount)}</strong></div>
-        <div><span>Buyer's premium (${A.PREMIUM * 100}%)</span><span>${A.usd(amount * A.PREMIUM)}</span></div>
-        <div class="total"><span>Total if won at this price</span><strong>${A.usd(A.withPremium(amount))}</strong></div>
-        <p class="muted small">Plus shipping and any import duties. Paddle ${db.reg.paddle}.</p>`;
+        <div><span>Your maximum bid</span><strong>${A.money(amount)}${A.ref(amount)}</strong></div>
+        <div><span>Buyer's premium (${A.PREMIUM * 100}%)</span><span>${A.money(amount * A.PREMIUM)}</span></div>
+        <div class="total"><span>Total if won at this price</span><strong>${A.money(A.withPremium(amount))}${A.ref(A.withPremium(amount))}</strong></div>
+        <p class="muted small">${HG.currency === "USD" ? "" : `Bids are placed in US dollars, the sale currency. ${HG.currency} amounts use today's rate of $1 = ${HG.sym()}${HG.rate().toLocaleString("en-US", { maximumFractionDigits: 2 })}; your invoice is settled at the rate on the day of payment. `}Plus shipping and any import duties. Paddle ${db.reg.paddle}.</p>`;
       m.classList.add("on");
       document.getElementById("bidConfirm").onclick = () => {
         m.classList.remove("on");

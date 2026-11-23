@@ -24,7 +24,7 @@
         <h3>Refine Results</h3>
         <details class="filter" open><summary>Category</summary><div class="opts" id="fCat"></div></details>
         <details class="filter" open><summary>Price</summary><div class="opts">
-          <div class="price-range"><input type="number" id="fMin" placeholder="Min $" min="0"><span>–</span><input type="number" id="fMax" placeholder="Max $" min="0"></div>
+          <div class="price-range"><input type="number" id="fMin" placeholder="Min" min="0"><span>–</span><input type="number" id="fMax" placeholder="Max" min="0"></div>
         </div></details>
         <details class="filter" open><summary>Style</summary><div class="opts" id="fStyle"></div></details>
         <details class="filter"><summary>Artist</summary><div class="opts" id="fDealer"></div></details>
@@ -81,6 +81,7 @@
       }).join("");
       $("fStyle").innerHTML = HG.styles.map(s => `<label><input type="checkbox" value="${s}" ${state.styles.has(s) ? "checked" : ""}> ${s}</label>`).join("");
       $("fDealer").innerHTML = [...new Set(HG.products.filter(p => p.artistId).map(p => p.artist))].map(a => `<label><input type="checkbox" value="${a}" ${state.dealers.has(a) ? "checked" : ""}> ${a}</label>`).join("");
+      $("fMin").placeholder = "Min " + HG.sym(); $("fMax").placeholder = "Max " + HG.sym();
       $("fSale").checked = state.sale; $("fNew").checked = state.isNew; $("fFav").checked = state.fav;
 
       const bindSet = (id, set) => $(id).addEventListener("change", e => {
@@ -107,10 +108,10 @@
         if (state.sale) list = list.filter(p => p.sale);
         if (state.isNew) list = list.filter(p => p.isNew);
         if (state.fav) list = list.filter(p => HG.favs.has(p.id));
-        if (state.min) list = list.filter(p => p.price >= +state.min);
-        if (state.max) list = list.filter(p => p.price <= +state.max);
-        if (state.sort === "low") list.sort((a, b) => a.price - b.price);
-        if (state.sort === "high") list.sort((a, b) => b.price - a.price);
+        if (state.min) list = list.filter(p => p.price && HG.convert(p.price) >= +state.min);
+        if (state.max) list = list.filter(p => p.price && HG.convert(p.price) <= +state.max);
+        if (state.sort === "low") list.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+        if (state.sort === "high") list.sort((a, b) => (b.price ?? -1) - (a.price ?? -1));
         if (state.sort === "new") list.sort((a, b) => (b.isNew | 0) - (a.isNew | 0));
 
         // title + crumbs

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hare &amp; Grouse | Art Gallery · Vintage · Watches · Auctions</title>
-  <meta name="description" content="Hare & Grouse is an art gallery offering paintings and works on paper, vintage design, fine watches and online auctions.">
+  <meta name="description" content="Hare & Grouse is an art gallery in Abuja, Nigeria, creating pantomaths through art. Paintings, vintage design, fine watches and online auctions.">
   <meta name="theme-color" content="#031706">
   <link rel="icon" href="assets/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,11 +18,11 @@
   <main>
     <!-- Hero -->
     <section class="hero" aria-label="Featured" style="padding:0">
-      <div class="slide on" data-eyebrow="Now Showing" data-title="Masters &amp; Moderns" data-text="Four centuries of painting in conversation, from Dutch still life to new abstraction from Lagos and Accra." data-cta="Explore Art" data-href="shop.html?cat=art">
+      <div class="slide on" data-eyebrow="Hare &amp; Grouse · Abuja" data-title="What we have is Art." data-text="We aim at creating pantomaths through art: paintings, vintage design and fine watches, chosen for people who want to know a little about everything beautiful." data-cta="Explore Art" data-href="shop.html?cat=art">
         <img src="assets/photos/gallery-salon.jpg" alt="A gallery salon hung with framed paintings on deep red walls"></div>
       <div class="slide" data-eyebrow="Live Online Auction" data-title="Modern &amp; Contemporary Art" data-text="Eight lots, closing one by one. Register once, then bid from anywhere in the world." data-cta="Enter the Saleroom" data-href="sale.html?id=hg-2611">
         <img src="assets/photos/gallery-auction.jpg" alt="A crowded saleroom during an auction"></div>
-      <div class="slide" data-eyebrow="New to the Gallery" data-title="Contemporary voices" data-text="New paintings and works on paper by artists we represent, available to acquire now." data-cta="View New Works" data-href="shop.html?cat=art&new=1">
+      <div class="slide" data-eyebrow="The Experience" data-title="You are the Art before the Art." data-text="We are not just about the art, we are about you. Visit the gallery for private viewings, music and conversation." data-cta="Book a Viewing" data-href="#visit">
         <img src="assets/photos/gallery-dark.jpg" alt="A long, softly lit gallery corridor hung with contemporary works"></div>
       <div class="hero-copy" id="heroCopy">
         <span class="eyebrow"></span>
@@ -62,7 +62,7 @@
     <section>
       <div class="wrap">
         <div class="sec-head">
-          <div><span class="eyebrow">Available Now</span><h2>New to the Gallery</h2><p>Recently acquired works, ready to collect.</p></div>
+          <div><span class="eyebrow">Available Now</span><h2>New to the Gallery</h2><p>“Only a master will recognise a masterpiece.”</p></div>
           <div class="rail-nav"><button data-rail="newRail" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button data-rail="newRail" data-dir="1" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
         </div>
         <div class="rail" id="newRail"></div>
@@ -72,7 +72,7 @@
     <!-- Artists -->
     <section class="cream">
       <div class="wrap">
-        <div class="sec-head"><div><span class="eyebrow">Represented Artists</span><h2>Artists of the Gallery</h2></div><a class="text-link" href="shop.html?cat=art">All Works</a></div>
+        <div class="sec-head"><div><span class="eyebrow">Artists &amp; Curators</span><h2>The Hare &amp; Grouse Family</h2><p>We are always big on allowing artists to express themselves without boundaries.</p></div><a class="text-link" href="https://www.instagram.com/hare_and_grouse/" target="_blank" rel="noopener">Follow on Instagram</a></div>
         <div class="artist-grid" id="artistGrid"></div>
       </div>
     </section>
@@ -129,13 +129,13 @@
         <div class="visit-img"><img src="assets/photos/gallery-white.jpg" alt="The white-walled gallery space" loading="lazy"></div>
         <div class="visit-copy">
           <span class="eyebrow">Visit the Gallery</span>
-          <h2>See the work in person</h2>
+          <h2>Not just the art. The experience.</h2>
           <dl>
-            <dt>Address</dt><dd>Your gallery address here</dd>
-            <dt>Hours</dt><dd>Tuesday to Saturday, 10:00 to 18:00</dd>
-            <dt>Viewings</dt><dd>Private viewings and auction previews by appointment</dd>
+            <dt>Where</dt><dd>Abuja, Federal Capital Territory, Nigeria</dd>
+            <dt>Viewings</dt><dd>Private viewings, collector visits and auction previews by appointment</dd>
+            <dt>Enquiries</dt><dd>Message us on Instagram <a class="link" href="https://www.instagram.com/hare_and_grouse/" target="_blank" rel="noopener">@hare_and_grouse</a></dd>
           </dl>
-          <div class="sale-actions"><a class="btn btn-gold" href="#">Book a Viewing</a><a class="btn btn-outline" href="#">Get Directions</a></div>
+          <div class="sale-actions"><a class="btn btn-gold" href="https://www.instagram.com/hare_and_grouse/" target="_blank" rel="noopener">Book a Viewing</a><a class="btn btn-outline" href="https://www.google.com/maps/search/?api=1&query=Hare+and+Grouse+Abuja" target="_blank" rel="noopener">Get Directions</a></div>
         </div>
       </div>
     </section>
@@ -170,10 +170,12 @@
       $("watchRail").innerHTML = HG.products.filter(p => p.cat === "watches" || p.sub === "Jewelry").map(HG.card).join("");
 
       // artists
-      $("artistGrid").innerHTML = HG.artists.map(a => `
-        <a class="artist" href="shop.html?q=${encodeURIComponent(a.name)}">
-          <div class="artist-img"><img src="${HG.img(a.img)}" alt="" loading="lazy"></div>
-          <h3>${a.name}</h3><p>${a.origin} · ${a.note}</p></a>`).join("");
+      $("artistGrid").innerHTML = HG.artists.map(a => {
+        const ext = /^https?:/.test(a.href), ini = a.initials || a.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+        return `<a class="artist" href="${a.href}" ${ext ? 'target="_blank" rel="noopener"' : ""}>
+          <div class="artist-img">${a.img ? `<img src="${HG.img(a.img)}" alt="" loading="lazy">` : `<span class="initials">${ini}</span>`}</div>
+          <h3>${a.name}</h3><p>${a.role}</p></a>`;
+      }).join("");
 
       // journal
       $("journalGrid").innerHTML = HG.articles.map(a => `

@@ -16,16 +16,19 @@ HG.categories = [
 
 HG.styles = ["Old Masters", "19th Century", "Modern", "Contemporary", "Abstract", "Mid-Century Modern", "Art Deco", "Scandinavian"];
 
-/* Sample artists. Names are placeholders: replace with the gallery's real roster. */
+/* The gallery family, from @hare_and_grouse on Instagram.
+   img: a work by the artist (optional). Without one, a gold monogram of their initials is shown. */
 HG.artists = [
-  { id: "okafor", name: "Adaeze Okafor", origin: "Lagos, b. 1988", img: "art-portrait.jpg", note: "Large-scale portraiture" },
-  { id: "bakare", name: "Tunde Bakare", origin: "Ibadan, b. 1979", img: "art-blue.jpg", note: "Gestural abstraction" },
-  { id: "lindqvist", name: "Maren Lindqvist", origin: "Stockholm, b. 1972", img: "art-sea.jpg", note: "Seascapes in oil" },
-  { id: "osei", name: "Kojo Osei", origin: "Accra, b. 1991", img: "art-geometric.jpg", note: "Hard-edge geometry" }
+  { name: "Chidi Okoro", role: "Mixed-media relief painting", img: "hg-broken-rose.jpg", href: "shop.html?q=Chidi%20Okoro" },
+  { name: "Jacqueline Suowari", role: "Ballpoint pen artist", href: "https://www.instagram.com/jacquelinesuowari/" },
+  { name: "@obinwaegbe", role: "Artist of the gallery", initials: "OE", href: "https://www.instagram.com/obinwaegbe/" },
+  { name: "Emmy Egwemi", role: "Lead Curator", href: "https://www.instagram.com/emmy.egwemi/" }
 ];
 
 HG.products = [
   /* ---------- ART ---------- */
+  { id: "hg-0001", name: "The Broken Rose", artist: "Chidi Okoro", cat: "art", sub: "Paintings", style: "Contemporary", period: "2023", material: "Mixed-media relief painting", price: null, img: "hg-broken-rose.jpg", gallery: ["hg-broken-rose.jpg"], dims: "120 × 90 cm", condition: "Excellent", isNew: true,
+    desc: "The painting shows how the innocence of a girl is damaged when she has to hawk on the street until after hours, exposed to all kinds of things. The mixed-media relief is the artist's interpretation of what is happening in society today, where children don't go to school but are forced to sell." },
   { id: "hg-1001", name: "Still Life with Peonies and Tulips", artist: "Dutch School, 17th Century", cat: "art", sub: "Paintings", style: "Old Masters", period: "1650-1699", material: "Oil on canvas", price: 38000, img: "art.jpg", gallery: ["art.jpg", "gallery-salon.jpg"], dims: "61 × 91 cm (unframed)", condition: "Good, relined", isNew: true },
   { id: "hg-1002", name: "Lady in Saffron", artist: "English School, 19th Century", cat: "art", sub: "Paintings", style: "19th Century", period: "1860-1869", material: "Oil on canvas", price: 46500, img: "art-saffron.jpg", gallery: ["art-saffron.jpg", "gallery-salon.jpg"], dims: "92 × 66 cm", condition: "Very good, original frame", isNew: true },
   { id: "hg-1003", name: "Gaze", artist: "Adaeze Okafor", artistId: "okafor", cat: "art", sub: "Paintings", style: "Contemporary", period: "2024", material: "Acrylic and spray paint on canvas", price: 14800, img: "art-portrait.jpg", gallery: ["art-portrait.jpg", "gallery-white.jpg"], dims: "150 × 120 cm", condition: "New, direct from the artist", isNew: true },
@@ -58,9 +61,9 @@ HG.products = [
 ];
 
 HG.articles = [
-  { title: "Building a Collection: Where to Begin With West African Contemporary Art", tag: "Collecting Guide", img: "art-portrait.jpg", read: "7 min read" },
-  { title: "Inside the Salesroom: How Our Online Auctions Work", tag: "Auctions", img: "gallery-auction.jpg", read: "5 min read" },
-  { title: "Patina, Provenance and Papers: Buying a Vintage Watch", tag: "Watches", img: "watch-field.jpg", read: "6 min read" }
+  { title: "The Broken Rose: Chidi Okoro on Childhood, Hawking and the Street", tag: "Artist Focus", img: "hg-broken-rose.jpg", read: "6 min read" },
+  { title: "Artists Without Boundaries: Our Lead Curator at the ArtStier Roundtable in the FCT", tag: "Gallery News", img: "gallery-white.jpg", read: "4 min read" },
+  { title: "Inside the Saleroom: How Our Online Auctions Work", tag: "Auctions", img: "gallery-auction.jpg", read: "5 min read" },
 ];
 
 HG.img = (f) => "assets/photos/" + f;

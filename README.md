@@ -1,6 +1,6 @@
 # Hare & Grouse
 
-Website for Hare & Grouse, an art gallery. It has four main sections: **Art**, **Vintage**, **Watches** and **Auction**. It is a plain HTML, CSS and JavaScript site with no build step.
+Website for Hare & Grouse, an art gallery in Abuja, Nigeria ([@hare_and_grouse](https://www.instagram.com/hare_and_grouse/)). Its motto: "What we have is Art. We aim at creating pantomaths through art." It has four main sections: **Art**, **Vintage**, **Watches** and **Auction**. It is a plain HTML, CSS and JavaScript site with no build step.
 
 Brand colours: deep green `#031706`, gold `#CD9A49` and white `#FFFFFF`. They are defined as tokens at the top of `assets/css/styles.css`.
 
@@ -13,6 +13,14 @@ Brand colours: deep green `#031706`, gold `#CD9A49` and white `#FFFFFF`. They ar
 | `auctions.html` | The Saleroom, with tabs for Live & Upcoming, Past Results and My Bids & Watchlist, plus How to Bid |
 | `sale.html?id=` | A sale's lots, with search, filters (open, my bids, watching), sorting and live countdowns |
 | `lot.html?sale=&lot=` | Lot detail with the bidding panel, bid history, condition, provenance and next/previous lot links |
+
+## Currency
+- Prices are stored in US dollars. Visitors can view them in USD, NGN, GBP or EUR using the selector in the top bar.
+- Conversions use live daily market rates from ExchangeRate-API (`open.er-api.com`). A second free source, fawazahmed0's currency-api on jsDelivr, is used if the first is unavailable. Rates are cached in the browser for 1 hour.
+- If neither source can be reached, the site uses the last rate it fetched, or a built-in fallback. The footer then says it couldn't refresh.
+- The footer always shows the rate in use, its source and when it was last updated.
+- Auctions are conducted in US dollars. Every bid, estimate, history entry and invoice amount is shown in the chosen currency, with the US-dollar figure alongside. Bidders can type a bid in naira and it is converted to US dollars at today's rate.
+- Rate settings are in the `currency` block at the top of `assets/js/app.js`.
 
 ## How the auction works
 - **Registration:** a bidder registers once and gets a paddle number that covers every sale.
@@ -32,10 +40,21 @@ For real sales, use **Supabase**. `docs/auction-supabase.sql` creates the tables
 2. In the site, replace `HG.auction.placeBid` with `supabase.rpc('place_bid', { p_lot, p_max })`, and subscribe to the `lots` and `bids` tables for live updates.
 3. Connect an n8n or Make webhook to new `invoices` rows to email winners and send a Paystack or Stripe payment link.
 
-## Content to replace before launch
-- `assets/js/data.js`: works for sale, artists, categories and articles. The artist names and works are **samples**.
+## Content
+**From the gallery's Instagram:**
+- Location: Abuja, FCT.
+- Mottos.
+- The gallery family: Chidi Okoro, Jacqueline Suowari, @obinwaegbe, and Lead Curator Emmy Egwemi.
+- Chidi Okoro's *The Broken Rose* (mixed-media relief, 120 × 90 cm, price on request), with its description.
+- The ArtStier roundtable news item.
+
+**Still sample content, to replace before launch:**
+- `assets/js/data.js`: every other work for sale. Works by Adaeze Okafor, Tunde Bakare, Maren Lindqvist and Kojo Osei are invented samples.
+- Watches and vintage items.
+- Journal article text.
 - `assets/js/auction-data.js`: auction sales and lots (samples).
-- The Visit section in `index.html`: the gallery address and opening hours are placeholders.
+- The Visit section in `index.html` needs the gallery's full street address and opening hours.
+- The domain hareandgrouse.com, linked from the Instagram bio, did not resolve when checked, so it may need renewing.
 - `assets/photos/`: stock photos from Unsplash. Replace them with photographs of the real works.
 
 ## Run locally

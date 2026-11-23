@@ -29,8 +29,9 @@
       <button type="button" class="icon-btn" id="offerClose" aria-label="Close"></button>
       <h3 id="offerTitle">Enquire or Make an Offer</h3>
       <p class="muted small">Our specialists usually reply within 24 hours. Offers are binding if accepted.</p>
-      <label for="offerAmt">Your offer (USD)</label>
-      <input id="offerAmt" type="number" min="1" required>
+      <label for="offerAmt" id="offerLbl">Your offer</label>
+      <input id="offerAmt" type="number" min="1">
+      <p class="muted small" id="offerFx" style="margin-top:6px"></p>
       <label for="offerEmail">Email</label>
       <input id="offerEmail" type="email" required>
       <label for="offerNote">Message (optional)</label>
@@ -62,14 +63,14 @@
           ${p.artist ? `<p class="lot-artist" style="font-size:26px">${p.artist}</p>` : `<span class="eyebrow">${p.style} · ${p.period.replace("-", "–")}</span>`}
           <h1 ${p.artist ? 'style="font-style:italic"' : ""}>${p.name}</h1>
           <p class="muted">${p.material} · ${p.dims}</p>
-          <p class="pdp-price">${p.was ? `<s>${HG.money(p.was)}</s>` : ""}${HG.money(p.price)}</p>
+          <p class="pdp-price">${p.price ? (p.was ? `<s>${HG.money(p.was)}</s>` : "") + HG.money(p.price) : "Price on request"}</p>${p.price && HG.currency !== "USD" ? `<p class="muted small">US$${p.price.toLocaleString("en-US")}</p>` : ""}
           <p class="muted small" style="margin-top:6px">Shipping quote available at checkout · Duties may apply</p>
           <div class="pdp-actions">
             <div class="row">
-              <button class="btn btn-dark" id="addBag">Add to Bag</button>
+              <button class="btn btn-dark" id="addBag">${p.price ? "Add to Bag" : "Enquire to Purchase"}</button>
               <button class="fav ${HG.favs.has(p.id) ? "on" : ""}" data-fav="${p.id}" aria-label="Save to favorites">${HG.ico.heart}</button>
             </div>
-            <button class="btn btn-outline" id="offerBtn">Make an Enquiry or Offer</button>
+            ${p.price ? `<button class="btn btn-outline" id="offerBtn">Make an Enquiry or Offer</button>` : ""}
           </div>
           <div class="assure">
             <div>Authenticity guaranteed by Hare &amp; Grouse, with full documentation.</div>
@@ -88,7 +89,7 @@
               </dl>
             </details>
             <details><summary>Description</summary>
-              <p class="txt">${p.artist ? `${p.name} by ${p.artist}, ${p.material.toLowerCase()}.` : `A fine example of ${p.style.toLowerCase()} design.`} Every work at Hare &amp; Grouse is examined and described by our specialists, and photographs show it as it will arrive. Contact us for additional images, provenance documents or a condition report.</p>
+              ${p.desc ? `<p class="txt">${p.desc}</p>` : ""}<p class="txt">${p.desc ? "" : p.artist ? `${p.name} by ${p.artist}, ${p.material.toLowerCase()}. ` : `A fine example of ${p.style.toLowerCase()} design. `}Every work at Hare &amp; Grouse is examined and described by our specialists, and photographs show it as it will arrive. Contact us for additional images, provenance documents or a condition report.</p>
             </details>
             <details><summary>Shipping &amp; Returns</summary>
               <p class="txt">Ships from the gallery. Most works dispatch within 5–10 business days with specialist fine-art couriers. Returns are accepted within 7 days of delivery for items not as described.</p>
@@ -113,12 +114,21 @@
         main.querySelector("img").style.transformOrigin = `${(e.clientX - r.left) / r.width * 100}% ${(e.clientY - r.top) / r.height * 100}%`;
       });
 
-      $("addBag").onclick = () => HG.addToBag(p.id);
+      $("addBag").onclick = () => p.price ? HG.addToBag(p.id) : openOffer();
 
       // offer modal
       const modal = $("offerModal");
       $("offerClose").innerHTML = HG.ico.close;
-      $("offerBtn").onclick = () => { modal.classList.add("on"); $("offerAmt").value = Math.round(p.price * 0.9); $("offerAmt").focus(); };
+      function openOffer() {
+        modal.classList.add("on");
+        $("offerTitle").textContent = p.price ? "Enquire or Make an Offer" : "Enquire to Purchase";
+        $("offerLbl").textContent = p.price ? `Your offer (${HG.currency})` : `Your budget (${HG.currency}, optional)`;
+        $("offerAmt").required = !!p.price;
+        $("offerAmt").value = p.price ? Math.round(HG.convert(p.price * 0.9)) : "";
+        $("offerFx").textContent = HG.currency === "USD" ? "" : `Converted at today's rate: $1 = ${HG.sym()}${HG.rate().toLocaleString("en-US", { maximumFractionDigits: 2 })}.`;
+        (p.price ? $("offerAmt") : $("offerEmail")).focus();
+      }
+      $("offerBtn")?.addEventListener("click", openOffer);
       $("offerClose").onclick = () => modal.classList.remove("on");
       modal.onclick = e => { if (e.target === modal) modal.classList.remove("on"); };
       $("offerForm").onsubmit = e => { e.preventDefault(); modal.classList.remove("on"); HG.toast("Thank you. A specialist will be in touch shortly."); };

@@ -9,12 +9,51 @@
     set(k, v) { try { localStorage.setItem("hg_" + k, JSON.stringify(v)); } catch (e) {} }
   };
 
-  /* ---------- currency ---------- */
-  const RATES = { USD: { r: 1, s: "$" }, GBP: { r: 0.79, s: "£" }, EUR: { r: 0.92, s: "€" }, NGN: { r: 1550, s: "₦" } };
+  /* ---------- currency (live rates) ----------
+     Base prices are in USD. Rates come from free daily market-rate feeds:
+       1. ExchangeRate-API open endpoint (open.er-api.com)
+       2. fawazahmed0 currency-api on jsDelivr (backup)
+     Cached for an hour; if both feeds are unreachable the last cached rate (or the
+     built-in fallback below) is used and the footer says so. */
+  const RATES = { USD: { s: "$", name: "US Dollar" }, NGN: { s: "₦", name: "Nigerian Naira" }, GBP: { s: "£", name: "British Pound" }, EUR: { s: "€", name: "Euro" } };
+  const FALLBACK = { rates: { USD: 1, NGN: 1367.64, GBP: 0.7636, EUR: 0.9111 }, updated: Date.UTC(2026, 10, 23), source: "built-in fallback", fetched: 0, stale: true };
+  const FX_TTL = 60 * 60 * 1000;
   HG.currency = store.get("cur", "USD");
-  HG.money = (usd) => {
-    const c = RATES[HG.currency] || RATES.USD;
-    return c.s + Math.round(usd * c.r).toLocaleString("en-US");
+  if (!RATES[HG.currency]) HG.currency = "USD";
+  HG.fx = store.get("fx", null) || FALLBACK;
+  HG.rate = (cur = HG.currency) => (cur === "USD" ? 1 : HG.fx.rates[cur] || FALLBACK.rates[cur] || 1);
+  HG.sym = (cur = HG.currency) => RATES[cur].s;
+  HG.convert = (usd, cur = HG.currency) => usd * HG.rate(cur);
+  HG.money = (usd, cur = HG.currency) => RATES[cur].s + Math.round(HG.convert(usd, cur)).toLocaleString("en-US");
+
+  const pick = (all) => { const o = { USD: 1 }; Object.keys(RATES).forEach((k) => { const v = all[k] ?? all[k.toLowerCase()]; if (v) o[k] = +v; }); return o; };
+  const timed = (url, ms = 4000) => {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+    return fetch(url, { signal: c.signal, cache: "no-store" }).then((r) => { clearTimeout(t); if (!r.ok) throw new Error(r.status); return r.json(); });
+  };
+  HG.loadRates = async (force) => {
+    const cached = store.get("fx", null);
+    if (!force && cached && Date.now() - cached.fetched < FX_TTL) { HG.fx = cached; return HG.fx; }
+    const sources = [
+      async () => { const d = await timed("https://open.er-api.com/v6/latest/USD"); if (d.result !== "success") throw 0;
+        return { rates: pick(d.rates), updated: d.time_last_update_unix * 1000, source: "ExchangeRate-API" }; },
+      async () => { const d = await timed("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json");
+        return { rates: pick(d.usd), updated: Date.parse(d.date), source: "Currency API (jsDelivr)" }; }
+    ];
+    for (const src of sources) {
+      try {
+        const fx = await src();
+        if (Object.keys(fx.rates).length === Object.keys(RATES).length) { HG.fx = { ...fx, fetched: Date.now(), stale: false }; store.set("fx", HG.fx); return HG.fx; }
+      } catch (e) { /* try next source */ }
+    }
+    HG.fx = cached ? { ...cached, stale: true } : FALLBACK;
+    return HG.fx;
+  };
+  HG.fxNote = () => {
+    const when = new Date(HG.fx.updated).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) + " UTC";
+    if (HG.currency === "USD") return `Prices in US dollars. Other currencies use live market rates (${HG.fx.source}, updated ${when}).`;
+    return `Prices shown in ${RATES[HG.currency].name}, converted from US dollars at $1 = ${RATES[HG.currency].s}${HG.rate().toLocaleString("en-US", { maximumFractionDigits: HG.rate() > 10 ? 2 : 4 })}. ` +
+      `Rate from ${HG.fx.source}, updated ${when}${HG.fx.stale ? " (couldn't refresh, showing last known rate)" : ""}.`;
   };
 
   /* ---------- favourites & bag ---------- */
@@ -64,7 +103,7 @@
         ${p.artist ? `<p class="card-artist">${p.artist}</p>` : ""}
         <h3 class="${p.artist ? "work-title" : ""}">${p.name}</h3>
         ${p.artist ? `<p class="meta">${p.material}</p>` : `<p class="meta">${p.sub} · ${p.period.replace("-", "–")}</p>`}
-        <p class="price">${p.was ? `<s>${HG.money(p.was)}</s> ` : ""}${HG.money(p.price)}</p>
+        <p class="price">${p.price ? (p.was ? `<s>${HG.money(p.was)}</s> ` : "") + HG.money(p.price) : "Price on request"}</p>
       </a>
     </article>`;
   };
@@ -105,13 +144,13 @@
 
     return `
     <div class="topbar">
-      <p>An art gallery for paintings, vintage design and fine watches · Viewing by appointment</p>
+      <p>Art gallery · Abuja, Nigeria · “What we have is Art.”</p>
       <div class="topbar-right">
         <a href="index.html#journal">The Journal</a>
         <a href="index.html#consign">Consign</a>
         <a href="auctions.html#mybids">My Bids</a>
         <label class="cur"><span class="sr">Currency</span>
-          <select id="currency">${Object.keys(RATES).map((k) => `<option ${k === HG.currency ? "selected" : ""}>${k}</option>`).join("")}</select>
+          <select id="currency">${Object.keys(RATES).map((k) => `<option value="${k}" ${k === HG.currency ? "selected" : ""}>${RATES[k].s} ${k}</option>`).join("")}</select>
         </label>
       </div>
     </div>
@@ -169,10 +208,11 @@
           <div><h4>Auctions</h4><ul><li><a href="auctions.html">Live Auctions</a></li><li><a href="auctions.html#results">Past Results</a></li><li><a href="auctions.html#how">How to Bid</a></li><li><a href="index.html#consign">Consign</a></li></ul></div>
         </div>
       </div>
+      <p class="wrap fx-note" id="fxNote"></p>
       <div class="wrap footer-bottom">
         <p>© ${new Date().getFullYear()} Hare &amp; Grouse. All rights reserved.</p>
         <ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Cookies</a></li><li><a href="#">Accessibility</a></li></ul>
-        <ul class="social"><li><a href="#">Instagram</a></li><li><a href="#">Pinterest</a></li><li><a href="#">LinkedIn</a></li><li><a href="#">TikTok</a></li></ul>
+        <ul class="social"><li><a href="https://www.instagram.com/hare_and_grouse/" target="_blank" rel="noopener">Instagram @hare_and_grouse</a></li></ul>
       </div>
     </footer>
     <aside class="drawer" id="bagDrawer" aria-label="Shopping bag" aria-hidden="true">
@@ -246,7 +286,7 @@
   HG.search = search;
 
   /* ---------- boot ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     $("#hg-header").outerHTML = header();
     $("#hg-footer").outerHTML = footer();
     updateCounts();
@@ -275,7 +315,7 @@
       const lots = [];
       if (q) (HG.sales || []).forEach((s) => s.lots.forEach((l) => (l.title + " " + l.artist).toLowerCase().includes(q) && lots.push([s, l])));
       res.innerHTML = r.length || lots.length
-        ? r.map((p) => `<a href="product.html?id=${p.id}"><img src="${HG.img(p.img)}" alt=""><span>${p.name}<small>${p.artist ? p.artist + " · " : ""}${HG.catName(p.cat)} · ${HG.money(p.price)}</small></span></a>`).join("") +
+        ? r.map((p) => `<a href="product.html?id=${p.id}"><img src="${HG.img(p.img)}" alt=""><span>${p.name}<small>${p.artist ? p.artist + " · " : ""}${HG.catName(p.cat)} · ${p.price ? HG.money(p.price) : "Price on request"}</small></span></a>`).join("") +
           lots.slice(0, 3).map(([s, l]) => `<a href="lot.html?sale=${s.id}&lot=${l.n}"><img src="${HG.img(l.img)}" alt=""><span>${l.title}<small>Auction · Lot ${l.n} · ${s.title}</small></span></a>`).join("") +
           `<a class="see-all" href="shop.html?q=${encodeURIComponent(input.value)}">See all results for “${input.value}”</a>`
         : input.value ? '<p class="none">No matches yet. Try “oil”, “abstract” or “chronograph”.</p>' : "";
@@ -298,6 +338,10 @@
     const h = $(".site-header");
     window.addEventListener("scroll", () => h.classList.toggle("scrolled", window.scrollY > 40), { passive: true });
 
+    // wait (briefly) for live exchange rates before pages render prices
+    await Promise.race([HG.loadRates(), new Promise((r) => setTimeout(r, 4500))]);
+    $("#fxNote").textContent = HG.fxNote();
+    $("#currency").title = HG.fxNote();
     document.dispatchEvent(new Event("hg:ready"));
   });
 })();
